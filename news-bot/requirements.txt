@@ -1,0 +1,5 @@
+requests
+praw
+feedparser
+python-dotenv
+schedule

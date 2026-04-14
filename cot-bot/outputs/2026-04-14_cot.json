@@ -1,0 +1,23 @@
+{
+    "run_timestamp": "2026-04-14T18:25:21.138986+00:00",
+    "assets": {
+        "Gold": {
+            "institutional_bias": "NEUTRAL",
+            "positioning_extreme": false,
+            "positioning_percentile": null,
+            "crowding_risk": "UNKNOWN"
+        },
+        "SPX": {
+            "institutional_bias": "NEUTRAL",
+            "positioning_extreme": false,
+            "positioning_percentile": null,
+            "crowding_risk": "UNKNOWN"
+        },
+        "NQ": {
+            "institutional_bias": "NEUTRAL",
+            "positioning_extreme": false,
+            "positioning_percentile": null,
+            "crowding_risk": "UNKNOWN"
+        }
+    }
+}

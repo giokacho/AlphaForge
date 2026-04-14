@@ -1,0 +1,51 @@
+# =============================================================================
+# AlphaForge — .gitignore
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Environment / secrets — NEVER commit these
+# ---------------------------------------------------------------------------
+.env
+**/.env
+*.env
+
+# Explicit per-bot .env paths (belt-and-suspenders)
+macro-bot/.env
+news-bot/.env
+debate-bot/.env
+technicals-bot/.env
+dashboard/backend/.env
+
+# ---------------------------------------------------------------------------
+# Python artefacts
+# ---------------------------------------------------------------------------
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/       # catches any folder accidentally named .env
+
+# ---------------------------------------------------------------------------
+# Bot outputs (runtime artefacts, not source)
+# ---------------------------------------------------------------------------
+macro-bot/reports/
+news-bot/outputs/
+technicals-bot/outputs/
+debate-bot/outputs/
+
+# ---------------------------------------------------------------------------
+# OS / editor noise
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/

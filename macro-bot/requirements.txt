@@ -1,0 +1,5 @@
+yfinance
+fredapi
+pandas
+schedule
+google-genai

@@ -42,6 +42,22 @@ def health_check():
         "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
     }
 
+@app.post("/auth/reset-admin")
+def reset_admin():
+    admin_user = os.getenv("ADMIN_USERNAME", "admin")
+    admin_pass = os.getenv("ADMIN_PASSWORD", "alphaforge_admin_default")
+    
+    # Force delete if exists
+    if database.get_user(admin_user):
+        database.delete_user(admin_user)
+        
+    # Recreate from .env values
+    success = database.create_user(admin_user, admin_pass)
+    if success:
+        return {"status": "ok", "message": f"Admin user '{admin_user}' reset successfully."}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to Recreate Admin user")
+
 @app.post("/auth/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = database.get_user(form_data.username)

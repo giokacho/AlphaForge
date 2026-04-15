@@ -65,5 +65,12 @@ def deactivate_user(username: str) -> None:
     conn.commit()
     conn.close()
 
+def delete_user(username: str) -> None:
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM users WHERE username = ?', (username,))
+    conn.commit()
+    conn.close()
+
 # Ensure DB exists on import
 init_db()

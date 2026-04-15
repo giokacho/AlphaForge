@@ -29,6 +29,7 @@ async def startup_event():
     # Establish a super-admin on the first application boot
     admin_user = os.getenv("ADMIN_USERNAME", "admin")
     admin_pass = os.getenv("ADMIN_PASSWORD", "alphaforge_admin_default")
+    admin_pass = admin_pass[:72]
     
     if database.get_user(admin_user) is None:
         success = database.create_user(admin_user, admin_pass)
@@ -46,6 +47,7 @@ def health_check():
 def reset_admin():
     admin_user = os.getenv("ADMIN_USERNAME", "admin")
     admin_pass = os.getenv("ADMIN_PASSWORD", "alphaforge_admin_default")
+    admin_pass = admin_pass[:72]
     
     # Force delete if exists
     if database.get_user(admin_user):

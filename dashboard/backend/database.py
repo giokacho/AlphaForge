@@ -1,7 +1,7 @@
 import sqlite3
 import os
 from datetime import datetime
-
+from auth import hash_password
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "users.db")
 
@@ -21,8 +21,8 @@ def init_db():
     conn.close()
 
 def create_user(username: str, password: str) -> bool:
-    import auth  # Local import to prevent circular dependency
-    hashed = auth.hash_password(password)
+    password = password[:72]
+    hashed = hash_password(password)
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()

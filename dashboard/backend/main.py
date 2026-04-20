@@ -18,7 +18,8 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:5173",
         "https://alpha-forge-wheat.vercel.app",
-        "https://alphaforge-production.up.railway.app"
+        "https://alpha-forge-git-main-alphahedge.vercel.app",
+        "https://alpha-forge-9j5r1h34n-alphahedge.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],

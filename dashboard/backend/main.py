@@ -25,16 +25,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 @app.on_event("startup")
 async def startup_event():
     print("AlphaForge Dashboard API running")
-    
-    # Establish a super-admin on the first application boot
+
     admin_user = os.getenv("ADMIN_USERNAME", "admin")
     admin_pass = os.getenv("ADMIN_PASSWORD", "alphaforge_admin_default")
     admin_pass = admin_pass[:72]
-    
-    if database.get_user(admin_user) is None:
-        success = database.create_user(admin_user, admin_pass)
-        if success:
-            print(f"Created default admin user: {admin_user}")
+
+    if database.get_user(admin_user):
+        database.delete_user(admin_user)
+
+    success = database.create_user(admin_user, admin_pass)
+    if success:
+        print(f"Admin user '{admin_user}' recreated on startup")
 
 @app.get("/health")
 def health_check():

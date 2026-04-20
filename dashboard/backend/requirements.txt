@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 python-jose[cryptography]
-passlib[bcrypt]
+bcrypt==4.0.1
 python-dotenv
 python-multipart
 # sqlite3 is part of the Python standard library, so it does not need to be pip installed.

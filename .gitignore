@@ -33,12 +33,14 @@ env/
 .env/       # catches any folder accidentally named .env
 
 # ---------------------------------------------------------------------------
-# Bot outputs (runtime artefacts, not source)
+# Bot outputs & runtime artefacts (never commit)
 # ---------------------------------------------------------------------------
-macro-bot/reports/
-news-bot/outputs/
-technicals-bot/outputs/
-debate-bot/outputs/
+**/outputs/
+logs/
+reports/
+*.db
+shared/combined_context.json
+shared/final_verdict.json
 
 # ---------------------------------------------------------------------------
 # OS / editor noise

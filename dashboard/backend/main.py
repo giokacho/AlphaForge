@@ -1,6 +1,7 @@
 import os
 import datetime
-from fastapi import FastAPI, Depends, HTTPException, status
+from typing import Any
+from fastapi import FastAPI, Depends, HTTPException, status, Header, Body
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 import config
@@ -66,6 +67,23 @@ def reset_admin():
         return {"status": "ok", "message": f"Admin user '{admin_user}' reset successfully."}
     else:
         raise HTTPException(status_code=500, detail="Failed to Recreate Admin user")
+
+_VALID_BOTS = {"macro", "news", "technicals", "cot", "debate", "risk"}
+
+@app.post("/internal/update/{bot_name}")
+async def internal_update(
+    bot_name: str,
+    payload: dict[str, Any] = Body(...),
+    x_internal_key: str = Header(...)
+):
+    expected = os.getenv("INTERNAL_SECRET", "")
+    if not expected or x_internal_key != expected:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    if bot_name not in _VALID_BOTS:
+        raise HTTPException(status_code=404, detail=f"Unknown bot: {bot_name}")
+    database.save_bot_output(bot_name, payload)
+    data.invalidate_cache()
+    return {"status": "ok", "bot": bot_name}
 
 @app.post("/auth/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):

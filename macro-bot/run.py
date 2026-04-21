@@ -19,7 +19,7 @@ def post_to_backend(payload: dict) -> None:
             timeout=10
         )
         resp.raise_for_status()
-        print(f"--> Backend POST /internal/update/macro → {resp.status_code}")
+        print(f"--> Backend POST /internal/update/macro -> {resp.status_code}")
     except Exception as e:
         print(f"--> Backend POST failed (non-fatal): {e}")
 
@@ -38,7 +38,7 @@ def main():
 
     # 3. Generate report (local markdown backup)
     print("--> Calling report generator module...\n")
-    generate_report(macro_data, result)
+    narrative_text = generate_report(macro_data, result)
 
     today_str = datetime.date.today().strftime('%Y-%m-%d')
     report_filename = f"{today_str}.md"
@@ -49,6 +49,7 @@ def main():
         **result,
         "indicators": macro_data,
         "run_date": today_str,
+        "narrative_text": narrative_text or "",
     }
     post_to_backend(post_payload)
 

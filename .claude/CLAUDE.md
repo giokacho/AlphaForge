@@ -97,7 +97,7 @@ not a side project.
 - Risk engine: trade sheet with position_size, unit, direction per asset
 
 ## Hosting
-- Backend: https://alphaforge-backend.railway.app (Railway, Python 3.13, us-west2)
+- Backend: https://alphaforge-production.up.railway.app (Railway, Python 3.13, us-west2)
 - Frontend: https://alphaforge.vercel.app (Vercel, auto-deploy on GitHub push)
 - Git client: GitHub Desktop (git not in system PATH on Windows)
 

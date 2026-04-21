@@ -193,20 +193,86 @@ async def get_signals(current_user: dict = Depends(get_current_user)):
         }
     return results
 
+def _score_dir(score: float) -> str:
+    if score > 0.1: return "BULLISH"
+    if score < -0.1: return "BEARISH"
+    return "NEUTRAL"
+
 @app.get("/api/macro")
 async def get_macro(current_user: dict = Depends(get_current_user)):
     payload = data.load_latest_data()
     macro = payload.get("macro", {})
     news = payload.get("news", {})
-    
+
     if not isinstance(macro, dict): macro = {}
     if not isinstance(news, dict): news = {}
-    
+
+    sentiment_fields = [
+        ("Fed Hawkishness", "fed_hawkishness"),
+        ("Geopolitical Risk", "geopolitical_risk"),
+        ("Earnings Tone", "earnings_tone"),
+        ("Overall Sentiment", "overall_sentiment"),
+        ("Gold Score", "gold_score"),
+        ("SPX Score", "spx_score"),
+        ("NQ Score", "nq_score"),
+        ("Institutional Divergence", "institutional_divergence"),
+    ]
+    sentiment_scores = {
+        label: {"score": float(news.get(field, 0.0)), "direction": _score_dir(float(news.get(field, 0.0)))}
+        for label, field in sentiment_fields
+    }
+
     return {
         "macro_regime": macro.get("regime", "UNKNOWN"),
-        "hawk_dove_score": news.get("hawk_dove_score", 0),
-        "narrative_momentum": news.get("narrative_momentum", 0.0),
-        "sentiment_scores": news.get("sentiment_scores", {})
+        "hawk_dove_score": float(news.get("fed_hawkishness", 0.0)) * 5,
+        "narrative_momentum": news.get("narrative_momentum", {}),
+        "sentiment_scores": sentiment_scores,
+        "narrative_text": macro.get("narrative_text", ""),
+        "indicators": macro.get("individual_scores", {}),
+        "total_score": macro.get("total_score", 0),
+        "run_date": macro.get("run_date", ""),
+    }
+
+@app.get("/api/news")
+async def get_news(current_user: dict = Depends(get_current_user)):
+    payload = data.load_latest_data()
+    news = payload.get("news", {})
+    if not isinstance(news, dict): news = {}
+
+    has_data = news.get("_status") == "OK"
+
+    category_map = [
+        ("Fed Policy",        "fed_hawkishness"),
+        ("Inflation",         None),
+        ("GDP / Growth",      None),
+        ("Employment",        None),
+        ("Geopolitics",       "geopolitical_risk"),
+        ("Risk Appetite",     "overall_sentiment"),
+        ("Earnings",          "earnings_tone"),
+        ("Dollar Strength",   "institutional_divergence"),
+        ("Commodity Demand",  "gold_score"),
+    ]
+
+    categories = {}
+    for label, field in category_map:
+        score = float(news.get(field, 0.0)) if (field and has_data) else 0.0
+        categories[label] = {
+            "score": score,
+            "direction": _score_dir(score),
+            "available": field is not None and has_data,
+        }
+
+    nm = news.get("narrative_momentum", {})
+    if not isinstance(nm, dict): nm = {}
+
+    return {
+        "categories": categories,
+        "contradiction_flag": news.get("contradiction_flag", False),
+        "contradiction_reason": news.get("contradiction_reason", ""),
+        "narrative_momentum": nm,
+        "dominant_narrative": news.get("dominant_narrative", ""),
+        "forward_event_risk": news.get("forward_event_risk", "UNKNOWN"),
+        "top_3_headlines": news.get("top_3_headlines", []),
     }
 
 @app.get("/api/cot")

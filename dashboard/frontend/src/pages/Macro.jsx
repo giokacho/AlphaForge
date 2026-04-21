@@ -172,17 +172,62 @@ export default function Macro() {
             padding: '24px',
             borderRadius: '8px',
             border: `1px solid ${theme.colors.ui.border}`,
-            color: theme.colors.text.secondary,
-            fontSize: '14px',
-            lineHeight: '1.6'
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
          }}>
-            <pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>
-                {typeof data.narrative_momentum === 'string' 
-                   ? data.narrative_momentum 
-                   : JSON.stringify(data.narrative_momentum, null, 2)}
-            </pre>
+            {(() => {
+               const nm = (typeof data.narrative_momentum === 'object' && data.narrative_momentum !== null)
+                  ? data.narrative_momentum : {};
+               const rows = [
+                  { label: 'Gold Change',  val: nm.gold_change },
+                  { label: 'SPX Change',   val: nm.spx_change },
+                  { label: 'NQ Change',    val: nm.nq_change },
+               ];
+               const shifting = Array.isArray(nm.shifting_assets) && nm.shifting_assets.length > 0
+                  ? nm.shifting_assets.join(', ') : 'None';
+               return (
+                  <>
+                     {rows.map(({ label, val }) => {
+                        const n = typeof val === 'number' ? val : 0;
+                        const color = n > 0 ? theme.colors.signals.green : n < 0 ? theme.colors.signals.red : theme.colors.text.secondary;
+                        return (
+                           <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ color: theme.colors.text.secondary, fontSize: '14px' }}>{label}</span>
+                              <span style={{ color, fontWeight: '600', fontSize: '14px' }}>
+                                 {n >= 0 ? '+' : ''}{n.toFixed(4)}
+                              </span>
+                           </div>
+                        );
+                     })}
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid ${theme.colors.ui.border}`, paddingTop: '12px' }}>
+                        <span style={{ color: theme.colors.text.secondary, fontSize: '14px' }}>Shifting Assets</span>
+                        <span style={{ color: theme.colors.text.primary, fontSize: '14px' }}>{shifting}</span>
+                     </div>
+                  </>
+               );
+            })()}
          </div>
       </div>
+
+      {/* Macro Briefing */}
+      {data.narrative_text && (
+         <div>
+            <h3 style={{ color: theme.colors.text.primary, borderBottom: `1px solid ${theme.colors.ui.border}`, paddingBottom: '12px' }}>Macro Briefing</h3>
+            <div style={{
+               backgroundColor: theme.colors.background.secondary,
+               padding: '24px',
+               borderRadius: '8px',
+               border: `1px solid ${theme.colors.ui.border}`,
+               color: theme.colors.text.secondary,
+               fontSize: '14px',
+               lineHeight: '1.8',
+               whiteSpace: 'pre-wrap'
+            }}>
+               {data.narrative_text}
+            </div>
+         </div>
+      )}
     </div>
   );
 }

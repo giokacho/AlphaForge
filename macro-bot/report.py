@@ -63,15 +63,15 @@ def generate_report(macro_data, result):
     
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write(report_text)
-        
+
     print("\n" + "="*50)
     print(" DAILY MACRO BRIEFING ".center(50, "="))
     print("="*50 + "\n")
     print(report_text)
     print("\n" + "="*50)
     print(f"Report saved to: {report_path}")
-    
-    return result.get('regime')
+
+    return report_text
 
 
 def fallback_report(result):
@@ -95,14 +95,14 @@ def fallback_report(result):
         
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write(fallback_text)
-        
+
     print("\n" + "="*50)
     print(" MACRO FALLBACK REPORT ".center(50, "="))
     print("="*50 + "\n")
     print(fallback_text)
     print(f"Fallback report saved to: {report_path}")
-    
-    return result.get('regime')
+
+    return fallback_text
 
 
 if __name__ == "__main__":

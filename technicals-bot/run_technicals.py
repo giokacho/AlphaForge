@@ -38,7 +38,7 @@ def post_to_backend(payload: dict) -> None:
             timeout=10
         )
         resp.raise_for_status()
-        print(f"--> Backend POST /internal/update/technicals → {resp.status_code}")
+        print(f"--> Backend POST /internal/update/technicals -> {resp.status_code}")
     except Exception as e:
         print(f"--> Backend POST failed (non-fatal): {e}")
 

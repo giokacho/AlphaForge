@@ -99,7 +99,7 @@ export default function Debate() {
               flexDirection: 'column'
           }}>
               <h3 style={{ margin: '0 0 16px 0', color: theme.colors.text.primary, fontSize: '18px' }}>Structural Bull Case</h3>
-              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', flex: 1, overflowY: 'auto', maxHeight: '400px', whiteSpace: 'pre-wrap' }}>
+              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
                   {data.bull_case}
               </div>
           </div>
@@ -113,7 +113,7 @@ export default function Debate() {
               flexDirection: 'column'
           }}>
               <h3 style={{ margin: '0 0 16px 0', color: theme.colors.text.primary, fontSize: '18px' }}>Structural Bear Case</h3>
-              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', flex: 1, overflowY: 'auto', maxHeight: '400px', whiteSpace: 'pre-wrap' }}>
+              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
                   {data.bear_case}
               </div>
           </div>
@@ -127,7 +127,7 @@ export default function Debate() {
               flexDirection: 'column'
           }}>
               <h3 style={{ margin: '0 0 16px 0', color: theme.colors.text.primary, fontSize: '18px' }}>Tail Risk Considerations</h3>
-              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', flex: 1, overflowY: 'auto', maxHeight: '400px', whiteSpace: 'pre-wrap' }}>
+              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
                   {data.risk_case}
               </div>
           </div>

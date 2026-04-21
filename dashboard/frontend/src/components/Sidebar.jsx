@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { theme } from '../styles/theme';
-import { LayoutDashboard, Activity, Globe, BarChart2, Users, Shield, LogOut } from 'lucide-react';
+import { LayoutDashboard, Activity, Globe, BarChart2, Users, Shield, LogOut, Newspaper } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar() {
@@ -33,6 +33,7 @@ export default function Sidebar() {
     { name: 'Overview', path: '/overview', icon: LayoutDashboard },
     { name: 'Signals', path: '/signals', icon: Activity },
     { name: 'Macro', path: '/macro', icon: Globe },
+    { name: 'News', path: '/news', icon: Newspaper },
     { name: 'CoT Data', path: '/cot', icon: BarChart2 },
     { name: 'Debate', path: '/debate', icon: Users },
   ];

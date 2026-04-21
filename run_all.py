@@ -7,6 +7,10 @@ import subprocess
 import logging
 import schedule
 
+# Force UTF-8 on Windows so bot output with Unicode characters (→, etc.) logs cleanly
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
 # --- Setup Logging ---
 base_dir = os.path.dirname(os.path.abspath(__file__))
 logs_dir = os.path.join(base_dir, "logs")
@@ -107,7 +111,8 @@ def run_pipeline():
         
         step_start_time = time.time()
         try:
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace')
+            sub_env = {**os.environ, 'PYTHONIOENCODING': 'utf-8'}
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace', env=sub_env)
             for line in process.stdout:
                 logger.info(line.rstrip('\n'))
             process.wait()

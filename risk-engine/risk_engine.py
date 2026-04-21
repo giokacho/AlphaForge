@@ -27,7 +27,7 @@ def post_to_backend(payload: dict) -> None:
             timeout=10
         )
         resp.raise_for_status()
-        print(f"[risk-engine] Backend POST /internal/update/risk → {resp.status_code}")
+        print(f"[risk-engine] Backend POST /internal/update/risk -> {resp.status_code}")
     except Exception as e:
         print(f"[risk-engine] Backend POST failed (non-fatal): {e}")
 

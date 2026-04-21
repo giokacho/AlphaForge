@@ -29,11 +29,11 @@ export default function Signals() {
   }
 
   // Ensure strict ordering: Gold, SPX, NQ
-  const cardsOrder = ['Gold', '^GSPC', '^NDX'];
+  const cardsOrder = ['Gold', 'SPX', 'NQ'];
   const displayNames = {
-      'Gold': 'GLD (Physical Gold)',
-      '^GSPC': 'SPY (S&P 500)',
-      '^NDX': 'QQQ (Nasdaq 100)'
+      'Gold': 'GC=F (Gold Futures)',
+      'SPX': '^GSPC (S&P 500)',
+      'NQ': '^NDX (Nasdaq 100)'
   };
 
   return (

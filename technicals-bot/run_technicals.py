@@ -20,8 +20,27 @@ import time
 import glob
 import datetime
 import traceback
+import requests
 import pandas as pd
 from filelock import FileLock, Timeout
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def post_to_backend(payload: dict) -> None:
+    backend_url = os.getenv("ALPHAFORGE_BACKEND_URL", "http://localhost:8000")
+    secret = os.getenv("INTERNAL_SECRET", "")
+    try:
+        resp = requests.post(
+            f"{backend_url}/internal/update/technicals",
+            json=payload,
+            headers={"x-internal-key": secret},
+            timeout=10
+        )
+        resp.raise_for_status()
+        print(f"--> Backend POST /internal/update/technicals → {resp.status_code}")
+    except Exception as e:
+        print(f"--> Backend POST failed (non-fatal): {e}")
 
 # ---------------------------------------------------------------------------
 # Module imports
@@ -498,6 +517,9 @@ def main() -> None:
 
     # Export results to shared context for debate-bot and orchestrator
     export_for_orchestrator()
+
+    # POST to Railway backend (local file save above is kept as backup)
+    post_to_backend(technicals_output)
 
 
 # ---------------------------------------------------------------------------

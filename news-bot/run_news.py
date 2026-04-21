@@ -5,8 +5,27 @@ import traceback
 import glob
 import time
 import schedule
+import requests
 from datetime import datetime
 from filelock import FileLock, Timeout
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def post_to_backend(payload: dict) -> None:
+    backend_url = os.getenv("ALPHAFORGE_BACKEND_URL", "http://localhost:8000")
+    secret = os.getenv("INTERNAL_SECRET", "")
+    try:
+        resp = requests.post(
+            f"{backend_url}/internal/update/news",
+            json=payload,
+            headers={"x-internal-key": secret},
+            timeout=10
+        )
+        resp.raise_for_status()
+        print(f"--> Backend POST /internal/update/news → {resp.status_code}")
+    except Exception as e:
+        print(f"--> Backend POST failed (non-fatal): {e}")
 
 # Import local sub-modules dynamically to allow graceful failures
 try:
@@ -126,6 +145,7 @@ def export_for_orchestrator():
     print(f"\n--- Orchestrator Export ---")
     print(f"Combined risk level: {combined_risk_level}")
     print(f"Context saved to {out_file}\n")
+    return combined_risk_level
 
 def run_once():
     now = datetime.now()
@@ -268,7 +288,10 @@ def run_once():
     print(f"\nNews Bot complete — output saved to {output_path}")
     
     # Export combined context for the orchestrator
-    export_for_orchestrator()
+    combined_risk_level = export_for_orchestrator()
+
+    # POST to Railway backend (local file save above is kept as backup)
+    post_to_backend({**final_scores, "combined_risk_level": combined_risk_level or "UNKNOWN"})
 
 if __name__ == '__main__':
     if "--now" in sys.argv:

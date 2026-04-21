@@ -2,9 +2,28 @@ import os
 import json
 import csv
 import time
+import requests
 from datetime import datetime, timezone
 import traceback
 from filelock import FileLock, Timeout
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def post_to_backend(payload: dict) -> None:
+    backend_url = os.getenv("ALPHAFORGE_BACKEND_URL", "http://localhost:8000")
+    secret = os.getenv("INTERNAL_SECRET", "")
+    try:
+        resp = requests.post(
+            f"{backend_url}/internal/update/debate",
+            json=payload,
+            headers={"x-internal-key": secret},
+            timeout=10
+        )
+        resp.raise_for_status()
+        print(f"--> Backend POST /internal/update/debate → {resp.status_code}")
+    except Exception as e:
+        print(f"--> Backend POST failed (non-fatal): {e}")
 
 from data_assembler import get_data_block
 from debaters import run_bull_bot, run_bear_bot
@@ -111,7 +130,10 @@ def main():
         daily_json = os.path.join(outputs_dir, f"{date_str}_verdict.json")
         with open(daily_json, 'w', encoding='utf-8') as f:
             json.dump(verdict, f, indent=4)
-            
+
+        # POST to Railway backend (local file save above is kept as backup)
+        post_to_backend(verdict)
+
         # Step 6
         step = 6
         csv_path = os.path.join(outputs_dir, 'verdict_history.csv')

@@ -11,6 +11,25 @@
 
 import os
 import json
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def post_to_backend(payload: dict) -> None:
+    backend_url = os.getenv("ALPHAFORGE_BACKEND_URL", "http://localhost:8000")
+    secret = os.getenv("INTERNAL_SECRET", "")
+    try:
+        resp = requests.post(
+            f"{backend_url}/internal/update/risk",
+            json=payload,
+            headers={"x-internal-key": secret},
+            timeout=10
+        )
+        resp.raise_for_status()
+        print(f"[risk-engine] Backend POST /internal/update/risk → {resp.status_code}")
+    except Exception as e:
+        print(f"[risk-engine] Backend POST failed (non-fatal): {e}")
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -351,6 +370,10 @@ def generate_trade_sheet(
         json.dump(trade_sheet, f, indent=4)
 
     print(f"[risk-engine] Trade sheet saved -> {out_path}")
+
+    # POST to Railway backend (local file save above is kept as backup)
+    post_to_backend(trade_sheet)
+
     return trade_sheet
 
 

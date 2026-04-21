@@ -1,7 +1,26 @@
 import os
 import json
+import requests
 from datetime import datetime, timezone
 from filelock import FileLock, Timeout
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def post_to_backend(payload: dict) -> None:
+    backend_url = os.getenv("ALPHAFORGE_BACKEND_URL", "http://localhost:8000")
+    secret = os.getenv("INTERNAL_SECRET", "")
+    try:
+        resp = requests.post(
+            f"{backend_url}/internal/update/cot",
+            json=payload,
+            headers={"x-internal-key": secret},
+            timeout=10
+        )
+        resp.raise_for_status()
+        print(f"--> Backend POST /internal/update/cot → {resp.status_code}")
+    except Exception as e:
+        print(f"--> Backend POST failed (non-fatal): {e}")
 
 from config import ASSETS, CFTC_MAPPING, DATA_DIR
 from fetcher import fetch_cot_data
@@ -116,6 +135,9 @@ def run_cot_pipeline():
         
     print(f"\nSaved COT report to: {output_path}")
     export_for_orchestrator(cot_output)
+
+    # POST to Railway backend (local file save above is kept as backup)
+    post_to_backend(cot_output)
 
 if __name__ == "__main__":
     run_cot_pipeline()

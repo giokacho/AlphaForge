@@ -31,8 +31,8 @@ export default function COT() {
 
   const assets = [
       { id: 'Gold', name: 'GLD (Physical Gold)' },
-      { id: '^GSPC', name: 'SPY (S&P 500)' },
-      { id: '^NDX', name: 'QQQ (Nasdaq 100)' }
+      { id: 'SPX', name: '^GSPC (S&P 500)' },
+      { id: 'NQ', name: '^NDX (Nasdaq 100)' }
   ];
   
   const getCrowdingColor = (rs) => {

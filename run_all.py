@@ -6,13 +6,17 @@ import datetime
 import subprocess
 import logging
 import schedule
+from dotenv import load_dotenv
 
 # Force UTF-8 on Windows so bot output with Unicode characters (→, etc.) logs cleanly
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# --- Setup Logging ---
+# --- Load shared pipeline env (ALPHAFORGE_BACKEND_URL, INTERNAL_SECRET) ---
 base_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(base_dir, '.env'))
+
+# --- Setup Logging ---
 logs_dir = os.path.join(base_dir, "logs")
 os.makedirs(logs_dir, exist_ok=True)
 
@@ -42,6 +46,7 @@ def pre_flight_checks():
     print_log("=" * 60)
     
     env_files = [
+        ".env",
         "macro-bot/.env",
         "news-bot/.env",
         "debate-bot/.env"
@@ -54,7 +59,12 @@ def pre_flight_checks():
         if os.path.getsize(p) == 0:
             print_log(f"[FAIL] Empty file: {rel_path}")
             sys.exit(1)
-            
+
+    for var in ["ALPHAFORGE_BACKEND_URL", "INTERNAL_SECRET"]:
+        if not os.getenv(var):
+            print_log(f"[FAIL] Missing env var: {var}  — add it to the root .env file.")
+            sys.exit(1)
+
     print_log("[PASS] Environmental variables verified.")
     
     try:

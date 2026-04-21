@@ -278,10 +278,12 @@ async def get_news(current_user: dict = Depends(get_current_user)):
 @app.get("/api/cot")
 async def get_cot(current_user: dict = Depends(get_current_user)):
     payload = data.load_latest_data()
-    cot_data = payload.get("cot", {})
+    cot_raw = payload.get("cot", {})
+    # COT bot wraps per-asset data under an "assets" key
+    cot_assets = cot_raw.get("assets", {}) if isinstance(cot_raw, dict) else {}
     results = {}
-    for k, v in cot_data.items():
-        if k.startswith("_") or k == "run_timestamp" or not isinstance(v, dict):
+    for k, v in cot_assets.items():
+        if not isinstance(v, dict):
             continue
         results[k] = {
             "institutional_bias": v.get("institutional_bias", "N/A"),

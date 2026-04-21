@@ -8,17 +8,17 @@ try:
 except ImportError:
     CFTC_MAPPING = {"Gold": "088691", "SPX": "13874A", "NQ": "209742"}
 
-def fetch_cot_data(cftc_code: str) -> pd.DataFrame:
+def fetch_cot_data(market_name: str) -> pd.DataFrame:
     """
-    Fetches the most recent 52 weeks of COT data for a given CFTC code.
-    
+    Fetches the most recent 52 weeks of COT data for a given market name.
+
     Returns a DataFrame with columns:
     date, commercial_long, commercial_short, large_spec_long, large_spec_short, small_spec_long, small_spec_short, open_interest
     """
-    url = "https://publicreporting.cftc.gov/resource/ir9q-k4jm.json"
-    
+    url = "https://publicreporting.cftc.gov/resource/jun7-fc8e.json"
+
     params = {
-        "$where": f"cftc_commodity_code='{cftc_code}'",
+        "$where": f"market_and_exchange_names='{market_name}'",
         "$limit": 52,
         "$order": "report_date_as_yyyy_mm_dd DESC"
     }

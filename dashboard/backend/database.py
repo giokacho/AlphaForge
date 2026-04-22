@@ -1,27 +1,30 @@
-import sqlite3
 import json
 import os
 from datetime import datetime
 from auth import hash_password
+import psycopg2
+import psycopg2.extras
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "users.db"))
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+def get_connection():
+    return psycopg2.connect(DATABASE_URL)
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             hashed_password TEXT NOT NULL,
-            is_active BOOLEAN NOT NULL DEFAULT 1,
+            is_active BOOLEAN NOT NULL DEFAULT TRUE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS bot_outputs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             bot_name TEXT NOT NULL,
             run_date TEXT NOT NULL,
             payload TEXT NOT NULL,
@@ -29,16 +32,17 @@ def init_db():
         )
     ''')
     conn.commit()
+    cursor.close()
     conn.close()
 
 def save_bot_output(bot_name: str, payload: dict) -> bool:
     run_date = datetime.utcnow().strftime("%Y-%m-%d")
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute('''
             INSERT INTO bot_outputs (bot_name, run_date, payload, created_at)
-            VALUES (?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s)
         ''', (bot_name, run_date, json.dumps(payload), datetime.utcnow()))
         conn.commit()
         return True
@@ -46,24 +50,29 @@ def save_bot_output(bot_name: str, payload: dict) -> bool:
         print(f"[database] save_bot_output error for '{bot_name}': {e}")
         return False
     finally:
+        cursor.close()
         conn.close()
 
 def get_latest_run_time() -> str | None:
-    conn = sqlite3.connect(DB_PATH)
-    row = conn.execute("SELECT MAX(created_at) FROM bot_outputs").fetchone()
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT MAX(created_at) FROM bot_outputs")
+    row = cursor.fetchone()
+    cursor.close()
     conn.close()
-    return row[0] if row and row[0] else None
+    return row[0].isoformat() if row and row[0] else None
 
 def get_latest_output(bot_name: str) -> dict | None:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('''
         SELECT payload FROM bot_outputs
-        WHERE bot_name = ?
+        WHERE bot_name = %s
         ORDER BY created_at DESC
         LIMIT 1
     ''', (bot_name,))
     row = cursor.fetchone()
+    cursor.close()
     conn.close()
     if row:
         try:
@@ -75,31 +84,32 @@ def get_latest_output(bot_name: str) -> dict | None:
 def create_user(username: str, password: str) -> bool:
     password = password[:72]
     hashed = hash_password(password)
-    
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute('''
             INSERT INTO users (username, hashed_password, created_at)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
         ''', (username, hashed, datetime.utcnow()))
         conn.commit()
         return True
-    except sqlite3.IntegrityError:
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
         return False
     finally:
+        cursor.close()
         conn.close()
 
 def get_user(username: str) -> dict:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('''
         SELECT id, username, hashed_password, is_active, created_at
-        FROM users WHERE username = ?
+        FROM users WHERE username = %s
     ''', (username,))
     row = cursor.fetchone()
+    cursor.close()
     conn.close()
-    
     if row:
         return {
             "id": row[0],
@@ -111,18 +121,20 @@ def get_user(username: str) -> dict:
     return None
 
 def deactivate_user(username: str) -> None:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE users SET is_active = 0 WHERE username = ?', (username,))
+    cursor.execute('UPDATE users SET is_active = FALSE WHERE username = %s', (username,))
     conn.commit()
+    cursor.close()
     conn.close()
 
 def delete_user(username: str) -> None:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM users WHERE username = ?', (username,))
+    cursor.execute('DELETE FROM users WHERE username = %s', (username,))
     conn.commit()
+    cursor.close()
     conn.close()
 
-# Ensure DB exists on import
+# Ensure tables exist on import
 init_db()

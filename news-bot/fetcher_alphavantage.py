@@ -6,7 +6,7 @@ def fetch_alphavantage():
         url = "https://www.alphavantage.co/query"
         params = {
             "function": "NEWS_SENTIMENT",
-            "tickers": "SPY,GLD,QQQ",
+            "topics": "financial_markets,economy_macro,commodity_markets,forex",
             "limit": 25,
             "apikey": ALPHAVANTAGE_KEY
         }

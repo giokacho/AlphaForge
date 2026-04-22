@@ -1,36 +1,22 @@
 import requests
-from datetime import datetime, timedelta
 from config import NEWSAPI_KEY, FOCUS_ASSETS
 
 def fetch_newsapi():
     try:
         url = "https://newsapi.org/v2/everything"
-        
-        # Build query for matching any of the focus assets
-        query_terms = []
-        for asset in FOCUS_ASSETS:
-            if " " in asset:
-                query_terms.append(f'"{asset}"')
-            else:
-                query_terms.append(asset)
-        q = "(" + " OR ".join(query_terms) + ")"
-        
-        # Time constraints - last 24 hours
-        from_date = (datetime.now() - timedelta(days=1)).isoformat()
-        
-        # Allowed domain filter
-        domains = (
-            "reuters.com,wsj.com,ft.com,bloomberg.com,cnbc.com,"
-            "marketwatch.com,apnews.com,foxbusiness.com,thestreet.com"
+
+        q = (
+            "(\"S&P 500\" OR \"federal reserve\" OR \"interest rates\" OR "
+            "\"gold futures\" OR nasdaq OR bitcoin OR inflation OR recession OR "
+            "\"stock market\" OR \"crude oil\" OR forex OR GDP OR earnings OR "
+            "\"Treasury yields\" OR \"dollar index\")"
         )
-        
+
         params = {
             "q": q,
-            "domains": domains,
             "language": "en",
-            "sortBy": "relevancy",
+            "sortBy": "publishedAt",
             "pageSize": 30,
-            "from": from_date,
             "apiKey": NEWSAPI_KEY
         }
         

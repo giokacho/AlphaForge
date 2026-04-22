@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { theme } from '../styles/theme';
-import { ShieldCheck, AlertTriangle, TrendingUp, TrendingDown, Target, Shield, Crosshair } from 'lucide-react';
+import { Target, Shield, Crosshair } from 'lucide-react';
 
 const MONO = "'JetBrains Mono', 'Courier New', monospace";
 
@@ -23,19 +22,6 @@ const SectionLabel = ({ children, right }) => (
   </div>
 );
 
-const DataRow = ({ label, value, valueColor = '#cccccc', noBorder }) => (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '5px 0',
-    borderBottom: noBorder ? 'none' : '1px solid #181818',
-    fontSize: '12px',
-  }}>
-    <span style={{ color: '#555' }}>{label}</span>
-    <span style={{ color: valueColor, fontFamily: MONO }}>{value}</span>
-  </div>
-);
 
 export default function Overview() {
   const [data, setData] = useState({ overview: null, signals: null });
@@ -278,6 +264,49 @@ export default function Overview() {
           </div>
         )}
       </div>
+
+      {/* Asset Signal Matrix */}
+      {signals && Object.keys(signals).length > 0 && (
+        <div style={{ ...panel }}>
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid #1a1a1a' }}>
+            <SectionLabel right={`${Object.keys(signals).length} ASSETS MONITORED`}>ASSET SIGNAL MATRIX</SectionLabel>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)' }}>
+            {Object.entries(signals).map(([asset, s], i) => {
+              const total = Object.keys(signals).length;
+              const cols = 5;
+              const isLastRow = i >= Math.floor((total - 1) / cols) * cols;
+              const isLastCol = (i + 1) % cols === 0 || i === total - 1;
+              const dc = s.direction === 'LONG' ? '#00ff41' : s.direction === 'SHORT' ? '#ff3333' : '#444';
+              const sc = { STRONG: '#00ff41', SIGNAL: '#ffaa00', WEAK: '#ff6600', NO_SIGNAL: '#333' }[s.signal_strength] || '#333';
+              const scorePct = ((s.final_score || 0) / 10) * 100;
+              return (
+                <div key={asset} style={{
+                  padding: '10px 12px',
+                  borderRight: !isLastCol ? '1px solid #1a1a1a' : 'none',
+                  borderBottom: !isLastRow ? '1px solid #1a1a1a' : 'none',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                    <span style={{ color: '#ff6600', fontSize: '12px', fontWeight: '700', fontFamily: MONO }}>
+                      {s.ticker || asset}
+                    </span>
+                    <span style={{ color: dc, fontSize: '8px', fontWeight: '700', padding: '1px 5px', border: `1px solid ${dc}44`, backgroundColor: `${dc}0d` }}>
+                      {s.direction}
+                    </span>
+                  </div>
+                  <div style={{ height: '3px', backgroundColor: '#111', marginBottom: '5px' }}>
+                    <div style={{ height: '100%', width: `${scorePct}%`, backgroundColor: sc, transition: 'width 0.8s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#333', fontSize: '9px', fontFamily: MONO }}>{(s.final_score || 0).toFixed(1)}/10</span>
+                    <span style={{ color: sc, fontSize: '9px', letterSpacing: '0.5px' }}>{(s.signal_strength || '').replace('_', ' ')}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
     </div>
   );

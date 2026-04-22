@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { TrendingUp, TrendingDown, Minus, Target, Shield, Crosshair } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const MONO = "'JetBrains Mono', 'Courier New', monospace";
 
@@ -90,7 +90,6 @@ export default function Signals() {
 
           const ticker    = td.ticker || assetKey;
           const fullName  = FULL_NAMES[assetKey] || assetKey;
-          const hasPrice  = td.stop_loss || td.target_1;
           const fmtPrice  = (v) => v ? v.toFixed(4) : '—';
 
           const ezStr = Array.isArray(td.entry_zone) && td.entry_zone.length === 2
@@ -157,6 +156,46 @@ export default function Signals() {
                 <DataRow label="TARGET 2"   value={fmtPrice(td.target_2)}   valueColor="#00ff41" />
                 <DataRow label="R/R RATIO"  value={td.rr_ratio ? `1 : ${td.rr_ratio.toFixed(2)}` : '—'} noBorder />
               </div>
+
+              {/* R/R Price Level Map */}
+              {td.stop_loss != null && td.target_2 != null && (() => {
+                const rawLevels = [
+                  { id: 'SL', price: td.stop_loss, color: '#ff3333' },
+                  ...(Array.isArray(td.entry_zone) && td.entry_zone[0] != null ? [{ id: 'E1', price: td.entry_zone[0], color: '#555' }] : []),
+                  ...(Array.isArray(td.entry_zone) && td.entry_zone[1] != null ? [{ id: 'E2', price: td.entry_zone[1], color: '#555' }] : []),
+                  ...(td.target_1 != null ? [{ id: 'T1', price: td.target_1, color: '#00bb2e' }] : []),
+                  { id: 'T2', price: td.target_2, color: '#00ff41' },
+                ].filter(l => l.price != null);
+                if (rawLevels.length < 2) return null;
+                const prices = rawLevels.map(l => l.price);
+                const minP = Math.min(...prices), maxP = Math.max(...prices);
+                const range = maxP - minP || 1;
+                const pct = (v) => ((v - minP) / range) * 100;
+                const e1 = Array.isArray(td.entry_zone) ? td.entry_zone[0] : null;
+                const e2 = Array.isArray(td.entry_zone) ? td.entry_zone[1] : null;
+                return (
+                  <div style={{ padding: '8px 12px', borderTop: '1px solid #181818' }}>
+                    <div style={{ color: '#2a2a2a', fontSize: '9px', letterSpacing: '1px', marginBottom: '10px' }}>PRICE LEVEL MAP</div>
+                    <div style={{ position: 'relative', height: '34px' }}>
+                      <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', backgroundColor: '#1a1a1a', transform: 'translateY(-50%)' }} />
+                      {e1 != null && e2 != null && (
+                        <div style={{
+                          position: 'absolute', top: '50%',
+                          left: `${pct(Math.min(e1, e2))}%`,
+                          width: `${Math.max(1, Math.abs(pct(e2) - pct(e1)))}%`,
+                          height: '10px', backgroundColor: '#33333355', transform: 'translateY(-50%)',
+                        }} />
+                      )}
+                      {rawLevels.map(({ id, price, color }) => (
+                        <div key={id} style={{ position: 'absolute', left: `${pct(price)}%`, top: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', transform: 'translateX(-50%)' }}>
+                          <span style={{ color, fontSize: '8px', fontFamily: MONO, lineHeight: 1, marginBottom: '2px' }}>{id}</span>
+                          <div style={{ width: '1.5px', flex: 1, backgroundColor: color }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           );
         })}

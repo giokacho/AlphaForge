@@ -24,6 +24,53 @@ function factorColor(v) {
   return '#333';
 }
 
+function FactorRadar({ factors }) {
+  const cx = 70, cy = 70, R = 48;
+  const axes = [
+    { key: 'F1_Trend',      label: 'TREND' },
+    { key: 'F2_Momentum',   label: 'MTM'   },
+    { key: 'F3_Volatility', label: 'ATR'   },
+    { key: 'F4_Volume',     label: 'VOL'   },
+  ];
+  const N = axes.length;
+
+  const pt = (i, r) => {
+    const phi = (i / N) * 2 * Math.PI;
+    return { x: cx + r * Math.sin(phi), y: cy - r * Math.cos(phi) };
+  };
+
+  // map factor value [-2..+2] → [0..R]; center = neutral (0), edge = +2
+  const toR = (v) => Math.max(0, ((Math.max(-2, Math.min(2, v || 0)) + 2) / 4) * R);
+
+  const dataPoints = axes.map((a, i) => pt(i, toR(factors[a.key] || 0)));
+  const polygon = dataPoints.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const avg = axes.reduce((s, a) => s + (factors[a.key] || 0), 0) / N;
+  const fillColor = avg > 0.3 ? '#00ff41' : avg < -0.3 ? '#ff3333' : '#ffaa00';
+
+  return (
+    <svg width="140" height="140" viewBox="0 0 140 140" style={{ overflow: 'visible' }}>
+      {/* Background rings at 25%, 50% (neutral), 75%, 100% */}
+      {[0.25, 0.5, 0.75, 1.0].map(lvl => {
+        const pts = axes.map((_, i) => { const p = pt(i, lvl * R); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(' ');
+        return <polygon key={lvl} points={pts} fill="none" stroke={lvl === 0.5 ? '#2a2a2a' : '#181818'} strokeWidth={lvl === 0.5 ? '1.5' : '1'} />;
+      })}
+      {/* Axis lines */}
+      {axes.map((_, i) => { const e = pt(i, R); return <line key={i} x1={cx} y1={cy} x2={e.x.toFixed(1)} y2={e.y.toFixed(1)} stroke="#1e1e1e" strokeWidth="1" />; })}
+      {/* Data polygon */}
+      <polygon points={polygon} fill={`${fillColor}1a`} stroke={fillColor} strokeWidth="1.5" strokeLinejoin="round" />
+      {/* Data dots */}
+      {dataPoints.map((p, i) => <circle key={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="2.5" fill={fillColor} />)}
+      {/* Center dot */}
+      <circle cx={cx} cy={cy} r="2" fill="#222" />
+      {/* Axis labels */}
+      {axes.map((a, i) => {
+        const lp = pt(i, R + 14);
+        return <text key={i} x={lp.x.toFixed(1)} y={lp.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle" fill="#2a2a2a" fontSize="8" fontFamily="'JetBrains Mono', monospace" letterSpacing="0.5">{a.label}</text>;
+      })}
+    </svg>
+  );
+}
+
 function ScoreStep({ label, value, sign }) {
   const isMultiplier = sign === '×';
   const isNeutral = value === 0 || value === 1.0;
@@ -164,17 +211,20 @@ function AssetCard({ name, data: d }) {
 
         {/* Factors */}
         <div style={{ padding: '10px 14px', borderRight: '1px solid #181818' }}>
-          <div style={{ color: '#444', fontSize: '9px', letterSpacing: '1px', marginBottom: '8px' }}>FACTOR ALIGNMENT</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ color: '#444', fontSize: '9px', letterSpacing: '1px', marginBottom: '4px' }}>FACTOR ALIGNMENT</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
+            <FactorRadar factors={factors} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
             {Object.entries(FACTOR_LABELS).map(([key, label]) => {
               const val = factors[key];
               const fc = factorColor(val);
               return (
                 <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: '#333', fontSize: '10px' }}>{label}</span>
+                  <span style={{ color: '#2a2a2a', fontSize: '10px' }}>{label}</span>
                   <div style={{
                     color: fc, fontSize: '11px', fontWeight: '700', fontFamily: MONO,
-                    padding: '1px 8px', border: `1px solid ${fc}44`, backgroundColor: `${fc}08`,
+                    padding: '1px 8px', border: `1px solid ${fc}33`, backgroundColor: `${fc}08`,
                     minWidth: '28px', textAlign: 'center',
                   }}>
                     {val !== undefined ? (val > 0 ? `+${val}` : val) : '—'}
@@ -183,7 +233,7 @@ function AssetCard({ name, data: d }) {
               );
             })}
           </div>
-          <div style={{ marginTop: '8px', borderTop: '1px solid #1a1a1a', paddingTop: '6px' }}>
+          <div style={{ marginTop: '6px', borderTop: '1px solid #1a1a1a', paddingTop: '5px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#333', fontSize: '10px' }}>TOTAL FACTORS</span>
               <span style={{ color: '#ff6600', fontSize: '11px', fontFamily: MONO }}>

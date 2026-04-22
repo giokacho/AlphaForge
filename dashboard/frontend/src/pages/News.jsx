@@ -21,6 +21,66 @@ const SectionLabel = ({ children, right }) => (
   </div>
 );
 
+const SHORT_NAMES = {
+  'Fed Policy':       'FED',
+  'Inflation':        'INFL',
+  'GDP / Growth':     'GDP',
+  'Employment':       'EMP',
+  'Geopolitics':      'GEO',
+  'Risk Appetite':    'RISK',
+  'Earnings':         'EARN',
+  'Dollar Strength':  'DXY',
+  'Commodity Demand': 'CMDTY',
+};
+
+function CategoryRadar({ categories }) {
+  const keys = Object.keys(categories);
+  const N = keys.length;
+  const cx = 110, cy = 110, R = 80;
+
+  const pt = (i, r) => {
+    const phi = (i / N) * 2 * Math.PI;
+    return { x: cx + r * Math.sin(phi), y: cy - r * Math.cos(phi) };
+  };
+
+  // map score [-1..+1] → [0..R]; center = -1, middle = neutral, edge = +1
+  const toR = (v) => ((Math.max(-1, Math.min(1, v || 0)) + 1) / 2) * R;
+
+  const dataPoints = keys.map((k, i) => pt(i, toR(categories[k].score || 0)));
+  const polygon = dataPoints.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  return (
+    <svg width="220" height="220" viewBox="0 0 220 220" style={{ overflow: 'visible', flexShrink: 0 }}>
+      {[0.25, 0.5, 0.75, 1.0].map(lvl => {
+        const pts = keys.map((_, i) => { const p = pt(i, lvl * R); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(' ');
+        return <polygon key={lvl} points={pts} fill="none" stroke={lvl === 0.5 ? '#282828' : '#181818'} strokeWidth={lvl === 0.5 ? '1.5' : '1'} />;
+      })}
+      {keys.map((_, i) => { const e = pt(i, R); return <line key={i} x1={cx} y1={cy} x2={e.x.toFixed(1)} y2={e.y.toFixed(1)} stroke="#1e1e1e" strokeWidth="1" />; })}
+      <polygon points={polygon} fill="#ff660012" stroke="#ff6600" strokeWidth="1.5" strokeLinejoin="round" />
+      {dataPoints.map((p, i) => {
+        const cat = categories[keys[i]];
+        const c = cat.available !== false
+          ? (cat.direction === 'BULLISH' ? '#00ff41' : cat.direction === 'BEARISH' ? '#ff3333' : '#ffaa00')
+          : '#2a2a2a';
+        return <circle key={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="3.5" fill={c} />;
+      })}
+      <circle cx={cx} cy={cy} r="2" fill="#222" />
+      {keys.map((k, i) => {
+        const lp = pt(i, R + 16);
+        const available = categories[k].available !== false;
+        return (
+          <text key={i} x={lp.x.toFixed(1)} y={lp.y.toFixed(1)}
+            textAnchor="middle" dominantBaseline="middle"
+            fill={available ? '#444' : '#282828'} fontSize="8"
+            fontFamily="'JetBrains Mono', monospace" letterSpacing="0.3">
+            {SHORT_NAMES[k] || k.slice(0, 5)}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 function dirColor(direction) {
   if (direction === 'BULLISH') return '#00ff41';
   if (direction === 'BEARISH') return '#ff3333';
@@ -132,7 +192,9 @@ export default function News() {
       {/* Category Sentiment Grid */}
       <div style={{ ...panel, padding: '14px' }}>
         <SectionLabel right="9-CATEGORY ANALYSIS">CATEGORY SENTIMENT SCORES</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+          <CategoryRadar categories={categories} />
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignContent: 'start' }}>
           {Object.entries(categories).map(([label, cat]) => {
             const score = cat.score || 0;
             const direction = cat.direction || 'NEUTRAL';
@@ -177,6 +239,7 @@ export default function News() {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 

@@ -96,6 +96,11 @@ export default function COT() {
     ...Object.keys(data.cot),
   ]));
 
+  const cotAssetsWithData = allAssets.filter(id => {
+    const p = data.cot[id]?.positioning_percentile;
+    return typeof p === 'number';
+  });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
 
@@ -105,6 +110,38 @@ export default function COT() {
         </div>
         <div style={{ color: '#333', fontSize: '10px' }}>COT POSITIONING × MULTI-FACTOR TECHNICALS</div>
       </div>
+
+      {/* All-asset positioning overview */}
+      {cotAssetsWithData.length > 0 && (
+        <div style={{ border: '1px solid #222', backgroundColor: '#0d0d0d', padding: '14px', marginBottom: '12px' }}>
+          <SectionLabel>POSITIONING OVERVIEW — ALL ASSETS</SectionLabel>
+          {cotAssetsWithData.map(id => {
+            const pct = data.cot[id].positioning_percentile;
+            const color = pct >= 80 ? '#ff3333' : pct <= 20 ? '#00ff41' : '#ffaa00';
+            const bias = data.cot[id].institutional_bias || '—';
+            const biasColor = bias.includes('LONG') ? '#00ff41' : bias.includes('SHORT') ? '#ff3333' : '#444';
+            return (
+              <div key={id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '7px' }}>
+                <span style={{ color: '#444', fontSize: '10px', fontFamily: MONO, width: '60px', flexShrink: 0 }}>{id}</span>
+                <div style={{ position: 'relative', flex: 1, height: '8px' }}>
+                  <div style={{ position: 'absolute', left: 0, width: '20%', height: '100%', backgroundColor: '#00ff4108' }} />
+                  <div style={{ position: 'absolute', left: '20%', width: '60%', height: '100%', backgroundColor: '#0a0a0a' }} />
+                  <div style={{ position: 'absolute', right: 0, width: '20%', height: '100%', backgroundColor: '#ff333308' }} />
+                  <div style={{ position: 'absolute', left: 0, width: `${pct}%`, height: '100%', backgroundColor: color, opacity: 0.5 }} />
+                  <div style={{ position: 'absolute', top: '-1px', bottom: '-1px', left: `${pct}%`, width: '2px', backgroundColor: color, transform: 'translateX(-50%)' }} />
+                </div>
+                <span style={{ color, fontSize: '10px', fontFamily: MONO, width: '30px', textAlign: 'right' }}>{pct.toFixed(0)}th</span>
+                <span style={{ color: biasColor, fontSize: '9px', fontFamily: MONO, width: '42px', textAlign: 'right' }}>
+                  {bias.includes('LONG') ? 'LONG' : bias.includes('SHORT') ? 'SHORT' : 'N/A'}
+                </span>
+              </div>
+            );
+          })}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#222', marginTop: '4px', paddingLeft: '70px', paddingRight: '80px' }}>
+            <span>EXTREME SHORT</span><span>NEUTRAL</span><span>EXTREME LONG</span>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
         {allAssets.map(assetId => {
@@ -163,11 +200,14 @@ export default function COT() {
                     />
                     {pTile !== null && (
                       <div style={{ marginBottom: '8px', marginTop: '4px' }}>
-                        <div style={{ height: '3px', backgroundColor: '#1a1a1a', position: 'relative' }}>
-                          <div style={{ height: '100%', width: `${pTile}%`, backgroundColor: pTileColor }} />
+                        <div style={{ position: 'relative', height: '14px', display: 'flex' }}>
+                          <div style={{ width: '20%', height: '100%', backgroundColor: '#00ff4108' }} />
+                          <div style={{ width: '60%', height: '100%', backgroundColor: '#0d0d0d' }} />
+                          <div style={{ width: '20%', height: '100%', backgroundColor: '#ff333308' }} />
+                          <div style={{ position: 'absolute', left: `${pTile}%`, top: '10%', bottom: '10%', width: '2px', backgroundColor: pTileColor, transform: 'translateX(-50%)', boxShadow: `0 0 4px ${pTileColor}55` }} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#2a2a2a', marginTop: '2px' }}>
-                          <span>0</span><span>50</span><span>100</span>
+                          <span>SHORT</span><span>NEUTRAL</span><span>LONG</span>
                         </div>
                       </div>
                     )}

@@ -16,15 +16,17 @@ const ProtectedLayout = () => {
     const { user, loading } = useAuth();
     
     if (loading) {
-        return <div style={{ 
-            height: '100vh', 
-            background: theme.colors.background.primary,
+        return <div style={{
+            height: '100vh',
+            background: '#0a0a0a',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: theme.colors.text.secondary,
-            fontFamily: 'Inter, system-ui, sans-serif'
-        }}>Initializing Secure Session...</div>;
+            color: '#444',
+            fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+            fontSize: '12px',
+            letterSpacing: '1px'
+        }}>INITIALIZING SECURE SESSION...</div>;
     }
     
     if (!user) {
@@ -32,9 +34,9 @@ const ProtectedLayout = () => {
     }
     
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: theme.colors.background.primary, fontFamily: 'Inter, system-ui, sans-serif' }}>
+        <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0a0a0a', fontFamily: "'JetBrains Mono', 'Courier New', monospace" }}>
             <Sidebar />
-            <main style={{ marginLeft: '260px', flex: 1, padding: '32px' }}>
+            <main style={{ marginLeft: '220px', flex: 1, padding: '20px 24px' }}>
                 <Outlet />
             </main>
         </div>

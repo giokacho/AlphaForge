@@ -1,25 +1,27 @@
 export const theme = {
   colors: {
     background: {
-      primary: '#0a0f1e',
-      secondary: '#0d1526',
-      card: '#111827',
+      primary: '#0a0a0a',
+      secondary: '#111111',
+      card: '#0d0d0d',
     },
     accent: {
-      blue: '#2563eb',
-      blueDark: '#1e3a5f',
+      orange: '#ff6600',
+      blue: '#ff6600',
+      blueDark: '#1a0800',
     },
     text: {
-      primary: '#f1f5f9',
-      secondary: '#94a3b8',
+      primary: '#cccccc',
+      secondary: '#666666',
     },
     signals: {
-      green: '#22c55e',
-      red: '#ef4444',
-      neutral: '#f59e0b',
+      green: '#00ff41',
+      red: '#ff3333',
+      neutral: '#ffaa00',
     },
     ui: {
-      border: '#1e293b',
+      border: '#222222',
+      borderDim: '#181818',
     }
   }
 };

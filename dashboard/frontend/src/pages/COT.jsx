@@ -1,6 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { theme } from '../styles/theme';
+
+const MONO = "'JetBrains Mono', 'Courier New', monospace";
+
+const SectionLabel = ({ children }) => (
+  <div style={{
+    color: '#ff6600',
+    fontSize: '9px',
+    fontWeight: '700',
+    letterSpacing: '1.5px',
+    borderBottom: '1px solid #222',
+    paddingBottom: '5px',
+    marginBottom: '8px',
+  }}>
+    {children}
+  </div>
+);
+
+const DataRow = ({ label, value, valueColor = '#cccccc', noBorder }) => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '5px 0',
+    borderBottom: noBorder ? 'none' : '1px solid #181818',
+    fontSize: '11px',
+  }}>
+    <span style={{ color: '#444' }}>{label}</span>
+    <span style={{ color: valueColor, fontFamily: MONO }}>{value}</span>
+  </div>
+);
 
 export default function COT() {
   const [data, setData] = useState({ cot: null, signals: null });
@@ -10,12 +39,12 @@ export default function COT() {
     const fetchData = async () => {
       try {
         const [cotRes, sigRes] = await Promise.all([
-           apiClient.get('/api/cot'),
-           apiClient.get('/api/signals')
+          apiClient.get('/api/cot'),
+          apiClient.get('/api/signals')
         ]);
         setData({ cot: cotRes.data, signals: sigRes.data });
       } catch (err) {
-        console.error("Failed to load COT", err);
+        console.error('Failed to load COT', err);
       } finally {
         setLoading(false);
       }
@@ -26,151 +55,135 @@ export default function COT() {
   }, []);
 
   if (loading || !data.cot || !data.signals) {
-    return <div style={{ color: theme.colors.text.secondary }}>Loading COT and technical positioning...</div>;
+    return <div style={{ color: '#333', fontSize: '11px', letterSpacing: '1px', paddingTop: '40px', textAlign: 'center' }}>LOADING COT POSITIONING...</div>;
   }
 
   const assets = [
-      { id: 'Gold', name: 'GLD (Physical Gold)' },
-      { id: 'SPX', name: '^GSPC (S&P 500)' },
-      { id: 'NQ', name: '^NDX (Nasdaq 100)' }
+    { id: 'Gold', ticker: 'GC=F', name: 'GOLD FUTURES' },
+    { id: 'SPX', ticker: '^GSPC', name: 'S&P 500' },
+    { id: 'NQ', ticker: '^NDX', name: 'NASDAQ 100' },
   ];
-  
-  const getCrowdingColor = (rs) => {
-      if (rs === 'LOW') return theme.colors.signals.green;
-      if (rs === 'HIGH') return theme.colors.signals.red;
-      return theme.colors.signals.neutral; // MEDIUM
+
+  const getCrowdingColor = (r) => {
+    if (r === 'LOW') return '#00ff41';
+    if (r === 'HIGH') return '#ff3333';
+    return '#ffaa00';
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      <div>
-        <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', color: theme.colors.text.primary }}>Institutional & Technical Profiles</h1>
-        <p style={{ margin: 0, color: theme.colors.text.secondary, fontSize: '15px' }}>Commitment of Traders (CoT) positioning intersecting with multi-factor technicals.</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
+        <div style={{ color: '#ff6600', fontSize: '13px', fontWeight: '700', letterSpacing: '2px' }}>
+          INSTITUTIONAL & TECHNICAL PROFILES
+        </div>
+        <div style={{ color: '#333', fontSize: '10px' }}>COT POSITIONING × MULTI-FACTOR TECHNICALS</div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
         {assets.map(asset => {
-            const cotData = data.cot[asset.id] || {};
-            const sigData = data.signals[asset.id] || {};
-            
-            const bias = cotData.institutional_bias || 'UNKNOWN';
-            const bColor = bias.includes('LONG') ? theme.colors.signals.green : bias.includes('SHORT') ? theme.colors.signals.red : theme.colors.text.secondary;
-            
-            const pTile = typeof cotData.positioning_percentile === 'number' ? cotData.positioning_percentile : 50;
-            const ptColor = pTile >= 90 ? theme.colors.signals.green : pTile <= 10 ? theme.colors.signals.red : theme.colors.text.secondary;
+          const cotData = data.cot[asset.id] || {};
+          const sigData = data.signals[asset.id] || {};
 
-            return (
-                <div key={asset.id} style={{
-                    backgroundColor: theme.colors.background.card,
-                    borderRadius: '12px',
-                    border: `1px solid ${theme.colors.ui.border}`,
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}>
-                    <div style={{ marginBottom: '24px' }}>
-                        <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', color: theme.colors.text.primary }}>{asset.name}</h2>
-                        <span style={{ color: theme.colors.text.secondary, fontSize: '13px' }}>{asset.id}</span>
-                    </div>
+          const bias = cotData.institutional_bias || 'UNKNOWN';
+          const bColor = bias.includes('LONG') ? '#00ff41' : bias.includes('SHORT') ? '#ff3333' : '#444';
 
-                    {/* COT Section */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
-                        <div style={{
-                            padding: '6px 12px',
-                            backgroundColor: `${bColor}22`,
-                            color: bColor,
-                            borderRadius: '4px',
-                            fontWeight: 'bold',
-                            fontSize: '13px',
-                            border: `1px solid ${bColor}44`,
-                            width: '100%',
-                            textAlign: 'center'
-                        }}>
-                            Bias: {bias}
-                        </div>
+          const pTile = typeof cotData.positioning_percentile === 'number' ? cotData.positioning_percentile : null;
+          const pTileColor = pTile !== null
+            ? pTile >= 80 ? '#ff3333' : pTile <= 20 ? '#00ff41' : '#ffaa00'
+            : '#444';
 
-                        <div style={{ textAlign: 'center', margin: '16px 0' }}>
-                            <span style={{ color: theme.colors.text.secondary, fontSize: '13px' }}>Positioning Percentile</span>
-                            <div style={{
-                                width: '120px',
-                                height: '120px',
-                                borderRadius: '50%',
-                                background: `conic-gradient(${ptColor} ${pTile}%, ${theme.colors.background.secondary} 0)`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                margin: '12px auto'
-                            }}>
-                                <div style={{
-                                    width: '100px', height: '100px', 
-                                    borderRadius: '50%', 
-                                    backgroundColor: theme.colors.background.card,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: '24px', fontWeight: 'bold', color: theme.colors.text.primary
-                                }}>
-                                    {typeof cotData.positioning_percentile === 'number' ? `${pTile.toFixed(0)}%` : 'N/A'}
-                                </div>
-                            </div>
-                        </div>
+          return (
+            <div key={asset.id} style={{ border: '1px solid #222', backgroundColor: '#0d0d0d' }}>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '0 8px', fontSize: '14px' }}>
-                           <span style={{ color: theme.colors.text.secondary }}>Crowding Risk</span>
-                           <span style={{ color: getCrowdingColor(cotData.crowding_risk), fontWeight: 'bold' }}>
-                               {cotData.crowding_risk || 'UNKNOWN'}
-                           </span>
-                        </div>
-                    </div>
-
-                    {/* Technicals Panel */}
-                    <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: `1px solid ${theme.colors.ui.border}` }}>
-                       <h4 style={{ color: theme.colors.text.primary, margin: '0 0 16px 0', fontSize: '15px' }}>Core Technicals</h4>
-                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
-                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                               <span style={{ color: theme.colors.text.secondary }}>Weekly Gate</span>
-                               <span style={{ color: theme.colors.text.primary, fontWeight: 'bold' }}>{sigData.weekly_gate || '-'}</span>
-                           </div>
-                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                               <span style={{ color: theme.colors.text.secondary }}>ATR Regime</span>
-                               <span style={{ color: theme.colors.text.primary, fontWeight: 'bold' }}>{sigData.atr_regime || '-'}</span>
-                           </div>
-                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                               <span style={{ color: theme.colors.text.secondary }}>4H Entry Mode</span>
-                               <span style={{ color: theme.colors.text.primary, fontWeight: 'bold' }}>{sigData.entry_mode || '-'}</span>
-                           </div>
-                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                               <span style={{ color: theme.colors.text.secondary }}>VSA Signature</span>
-                               <span style={{ color: theme.colors.signals.neutral, fontWeight: 'bold' }}>{sigData.vsa_flag || 'NONE'}</span>
-                           </div>
-                       </div>
-                       
-                       <h4 style={{ color: theme.colors.text.primary, margin: '24px 0 12px 0', fontSize: '14px' }}>Factor Signatures</h4>
-                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                           {Object.entries(sigData.factors || {}).map(([fk, fv]) => {
-                               let fColor = theme.colors.text.secondary;
-                               let bgFill = theme.colors.background.secondary;
-                               if (fv >= 1) { fColor = theme.colors.signals.green; bgFill = 'rgba(34, 197, 94, 0.1)'; }
-                               if (fv <= -1) { fColor = theme.colors.signals.red; bgFill = 'rgba(239, 68, 68, 0.1)'; }
-                               
-                               return (
-                                   <div key={fk} style={{
-                                       padding: '4px 8px',
-                                       borderRadius: '4px',
-                                       backgroundColor: bgFill,
-                                       border: `1px solid ${fColor}44`,
-                                       color: fColor,
-                                       fontSize: '11px',
-                                       fontWeight: 'bold',
-                                       letterSpacing: '0.5px'
-                                   }}>
-                                       {fk}: {fv}
-                                   </div>
-                               );
-                           })}
-                       </div>
-                    </div>
-
+              {/* Card header */}
+              <div style={{ padding: '8px 12px', backgroundColor: '#0a0a0a', borderBottom: '1px solid #222' }}>
+                <div style={{ color: '#ff6600', fontSize: '13px', fontWeight: '700', fontFamily: MONO, letterSpacing: '1px' }}>
+                  {asset.ticker}
                 </div>
-            );
+                <div style={{ color: '#333', fontSize: '10px', letterSpacing: '0.5px' }}>{asset.name}</div>
+              </div>
+
+              <div style={{ padding: '10px 12px' }}>
+
+                {/* COT section */}
+                <SectionLabel>CFTC POSITIONING</SectionLabel>
+
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '6px 8px',
+                  border: `1px solid ${bColor}33`,
+                  backgroundColor: `${bColor}08`,
+                  marginBottom: '8px',
+                }}>
+                  <span style={{ color: '#444', fontSize: '10px', letterSpacing: '1px' }}>INSTITUTIONAL BIAS</span>
+                  <span style={{ color: bColor, fontSize: '12px', fontWeight: '700', fontFamily: MONO }}>{bias}</span>
+                </div>
+
+                <DataRow
+                  label="POSITIONING %ile"
+                  value={pTile !== null ? `${pTile.toFixed(0)}th` : 'N/A'}
+                  valueColor={pTileColor}
+                />
+
+                {/* Percentile bar */}
+                {pTile !== null && (
+                  <div style={{ marginBottom: '8px', marginTop: '4px' }}>
+                    <div style={{ height: '3px', backgroundColor: '#1a1a1a', position: 'relative' }}>
+                      <div style={{ height: '100%', width: `${pTile}%`, backgroundColor: pTileColor }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#2a2a2a', marginTop: '2px' }}>
+                      <span>0</span><span>50</span><span>100</span>
+                    </div>
+                  </div>
+                )}
+
+                <DataRow
+                  label="CROWDING RISK"
+                  value={cotData.crowding_risk || 'UNKNOWN'}
+                  valueColor={getCrowdingColor(cotData.crowding_risk)}
+                  noBorder
+                />
+
+                {/* Technicals section */}
+                <div style={{ borderTop: '1px solid #1a1a1a', marginTop: '10px', paddingTop: '10px' }}>
+                  <SectionLabel>CORE TECHNICALS</SectionLabel>
+                  <DataRow label="WEEKLY GATE" value={sigData.weekly_gate || '—'} />
+                  <DataRow label="ATR REGIME" value={sigData.atr_regime || '—'} />
+                  <DataRow label="4H ENTRY MODE" value={sigData.entry_mode || '—'} />
+                  <DataRow label="VSA SIGNATURE" value={sigData.vsa_flag || 'NONE'} valueColor={sigData.vsa_flag && sigData.vsa_flag !== 'NONE' ? '#ffaa00' : '#2a2a2a'} noBorder />
+                </div>
+
+                {/* Factor signatures */}
+                {Object.keys(sigData.factors || {}).length > 0 && (
+                  <div style={{ borderTop: '1px solid #1a1a1a', marginTop: '10px', paddingTop: '10px' }}>
+                    <SectionLabel>FACTOR SIGNATURES</SectionLabel>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {Object.entries(sigData.factors).map(([fk, fv]) => {
+                        const fColor = fv >= 1 ? '#00ff41' : fv <= -1 ? '#ff3333' : '#333';
+                        return (
+                          <div key={fk} style={{
+                            padding: '2px 6px',
+                            border: `1px solid ${fColor}44`,
+                            backgroundColor: `${fColor}08`,
+                            color: fColor,
+                            fontSize: '10px',
+                            fontFamily: MONO,
+                            letterSpacing: '0.5px',
+                          }}>
+                            {fk}:{fv}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          );
         })}
       </div>
     </div>

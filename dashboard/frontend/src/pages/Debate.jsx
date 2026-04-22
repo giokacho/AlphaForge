@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { theme } from '../styles/theme';
 import Skeleton from '../components/Skeleton';
 import { TrendingUp, TrendingDown, Swords } from 'lucide-react';
+
+const MONO = "'JetBrains Mono', 'Courier New', monospace";
+
+const SectionLabel = ({ children, accentColor = '#ff6600' }) => (
+  <div style={{
+    color: accentColor,
+    fontSize: '10px',
+    fontWeight: '700',
+    letterSpacing: '1.5px',
+    borderBottom: `1px solid ${accentColor}33`,
+    paddingBottom: '6px',
+    marginBottom: '12px',
+  }}>
+    {children}
+  </div>
+);
 
 export default function Debate() {
   const [data, setData] = useState(null);
@@ -14,7 +29,7 @@ export default function Debate() {
         const response = await apiClient.get('/api/debate');
         setData(response.data);
       } catch (err) {
-        console.error("Failed to load debate", err);
+        console.error('Failed to load debate', err);
       } finally {
         setLoading(false);
       }
@@ -26,125 +41,119 @@ export default function Debate() {
 
   if (loading || !data) {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-             <Skeleton height="140px" />
-             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
-                 <Skeleton height="350px" />
-                 <Skeleton height="350px" />
-                 <Skeleton height="350px" />
-             </div>
-             <Skeleton height="150px" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <Skeleton height="100px" borderRadius="0" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          <Skeleton height="320px" borderRadius="0" />
+          <Skeleton height="320px" borderRadius="0" />
+          <Skeleton height="320px" borderRadius="0" />
         </div>
+        <Skeleton height="120px" borderRadius="0" />
+      </div>
     );
   }
 
-  // Verdict processing
   const direction = data.final_direction || 'NO_SIGNAL';
-  const dColor = direction === 'LONG' ? theme.colors.signals.green : direction === 'SHORT' ? theme.colors.signals.red : theme.colors.text.secondary;
+  const dColor = direction === 'LONG' ? '#00ff41' : direction === 'SHORT' ? '#ff3333' : '#444';
+  const DirIcon = direction === 'LONG' ? TrendingUp : direction === 'SHORT' ? TrendingDown : Swords;
+
+  const convScore = data.conviction_score || 0;
+  const convPct = (convScore / 10) * 100;
+
+  const panel = { border: '1px solid #222', backgroundColor: '#0d0d0d' };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      <div>
-        <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', color: theme.colors.text.primary }}>Neural Synthesis Board</h1>
-        <p style={{ margin: 0, color: theme.colors.text.secondary, fontSize: '15px' }}>CIO-level debate synthesis intersecting structural bull, bear, and tail-risk cases.</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
+        <div style={{ color: '#ff6600', fontSize: '13px', fontWeight: '700', letterSpacing: '2px' }}>
+          NEURAL SYNTHESIS BOARD
+        </div>
+        <div style={{ color: '#333', fontSize: '10px' }}>CIO-LEVEL DEBATE — BULL / BEAR / RISK SYNTHESIS</div>
       </div>
 
-      {/* Top Card */}
-      <div style={{
-          backgroundColor: theme.colors.background.card,
-          border: `1px solid ${theme.colors.ui.border}`,
-          borderRadius: '12px',
-          padding: '32px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-      }}>
-          <div>
-              <span style={{ color: theme.colors.text.secondary, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>Final Verdict</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
-                  <div style={{
-                      padding: '8px 24px',
-                      backgroundColor: `${dColor}22`,
-                      border: `2px solid ${dColor}`,
-                      borderRadius: '8px',
-                      color: dColor,
-                      fontSize: '32px',
-                      fontWeight: 'bold',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px'
-                  }}>
-                      {direction === 'LONG' ? <TrendingUp size={28}/> : direction === 'SHORT' ? <TrendingDown size={28}/> : <Swords size={28}/>}
-                      {direction}
-                  </div>
-              </div>
+      {/* Final Verdict Panel */}
+      <div style={{ ...panel, marginBottom: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${dColor}33` }}>
+
+        <div style={{ padding: '16px 20px', borderRight: '1px solid #222' }}>
+          <div style={{ color: '#444', fontSize: '10px', letterSpacing: '1.5px', marginBottom: '10px' }}>FINAL VERDICT</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: dColor,
+              fontSize: '28px',
+              fontWeight: '700',
+              fontFamily: MONO,
+              padding: '6px 16px',
+              border: `1px solid ${dColor}`,
+              backgroundColor: `${dColor}0a`,
+            }}>
+              <DirIcon size={22} />
+              {direction}
+            </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-              <span style={{ color: theme.colors.text.secondary, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>Conviction Model</span>
-              <div style={{ fontSize: '48px', fontWeight: 'bold', color: theme.colors.text.primary, lineHeight: '1.2' }}>
-                  {data.conviction_score}<span style={{ fontSize: '24px', color: theme.colors.text.secondary }}>/10</span>
-              </div>
+        </div>
+
+        <div style={{ padding: '16px 20px' }}>
+          <div style={{ color: '#444', fontSize: '10px', letterSpacing: '1.5px', marginBottom: '10px' }}>CONVICTION MODEL</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '10px' }}>
+            <span style={{ color: '#ff6600', fontSize: '36px', fontWeight: '700', fontFamily: MONO, lineHeight: 1 }}>
+              {convScore}
+            </span>
+            <span style={{ color: '#333', fontSize: '18px', fontFamily: MONO }}>/10</span>
           </div>
+          <div style={{ height: '4px', backgroundColor: '#111' }}>
+            <div style={{ height: '100%', width: `${convPct}%`, backgroundColor: '#ff6600', transition: 'width 1s ease' }} />
+          </div>
+        </div>
+
       </div>
 
-      {/* 3 Panels */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
-          {/* Bull */}
-          <div style={{
-              backgroundColor: theme.colors.background.card,
-              borderLeft: `4px solid ${theme.colors.signals.green}`,
-              borderRadius: '8px',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column'
-          }}>
-              <h3 style={{ margin: '0 0 16px 0', color: theme.colors.text.primary, fontSize: '18px' }}>Structural Bull Case</h3>
-              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                  {data.bull_case}
-              </div>
+      {/* 3 Case Panels */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '12px' }}>
+
+        {/* Bull Case */}
+        <div style={{ ...panel, borderLeft: '2px solid #00ff41' }}>
+          <div style={{ padding: '12px 14px' }}>
+            <SectionLabel accentColor="#00ff41">STRUCTURAL BULL CASE</SectionLabel>
+            <div style={{ color: '#555', fontSize: '11px', lineHeight: '1.7', whiteSpace: 'pre-wrap', fontFamily: MONO }}>
+              {data.bull_case}
+            </div>
           </div>
-          {/* Bear */}
-          <div style={{
-              backgroundColor: theme.colors.background.card,
-              borderLeft: `4px solid ${theme.colors.signals.red}`,
-              borderRadius: '8px',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column'
-          }}>
-              <h3 style={{ margin: '0 0 16px 0', color: theme.colors.text.primary, fontSize: '18px' }}>Structural Bear Case</h3>
-              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                  {data.bear_case}
-              </div>
+        </div>
+
+        {/* Bear Case */}
+        <div style={{ ...panel, borderLeft: '2px solid #ff3333' }}>
+          <div style={{ padding: '12px 14px' }}>
+            <SectionLabel accentColor="#ff3333">STRUCTURAL BEAR CASE</SectionLabel>
+            <div style={{ color: '#555', fontSize: '11px', lineHeight: '1.7', whiteSpace: 'pre-wrap', fontFamily: MONO }}>
+              {data.bear_case}
+            </div>
           </div>
-          {/* Risk */}
-          <div style={{
-              backgroundColor: theme.colors.background.card,
-              borderLeft: `4px solid ${theme.colors.signals.neutral}`,
-              borderRadius: '8px',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column'
-          }}>
-              <h3 style={{ margin: '0 0 16px 0', color: theme.colors.text.primary, fontSize: '18px' }}>Tail Risk Considerations</h3>
-              <div style={{ color: theme.colors.text.secondary, fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                  {data.risk_case}
-              </div>
+        </div>
+
+        {/* Risk Case */}
+        <div style={{ ...panel, borderLeft: '2px solid #ffaa00' }}>
+          <div style={{ padding: '12px 14px' }}>
+            <SectionLabel accentColor="#ffaa00">TAIL RISK CONSIDERATIONS</SectionLabel>
+            <div style={{ color: '#555', fontSize: '11px', lineHeight: '1.7', whiteSpace: 'pre-wrap', fontFamily: MONO }}>
+              {data.risk_case}
+            </div>
           </div>
+        </div>
+
       </div>
 
-      {/* Synthesis Component */}
-      <div style={{
-          backgroundColor: theme.colors.background.card,
-          borderLeft: `4px solid ${theme.colors.accent.blue}`,
-          borderTopRightRadius: '8px',
-          borderBottomRightRadius: '8px',
-          padding: '24px',
-      }}>
-          <h3 style={{ margin: '0 0 16px 0', color: theme.colors.text.primary, fontSize: '18px' }}>Final Strategic Synthesis</h3>
-          <div style={{ color: theme.colors.text.secondary, fontSize: '15px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-             {data.synthesis}
+      {/* Synthesis */}
+      <div style={{ ...panel, borderLeft: '2px solid #ff6600' }}>
+        <div style={{ padding: '12px 16px' }}>
+          <SectionLabel>FINAL STRATEGIC SYNTHESIS</SectionLabel>
+          <div style={{ color: '#888', fontSize: '12px', lineHeight: '1.7', whiteSpace: 'pre-wrap', fontFamily: MONO }}>
+            {data.synthesis}
           </div>
+        </div>
       </div>
 
     </div>

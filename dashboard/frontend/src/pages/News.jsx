@@ -1,12 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { theme } from '../styles/theme';
 import { AlertTriangle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-function dirColor(direction, t) {
-  if (direction === 'BULLISH') return t.colors.signals.green;
-  if (direction === 'BEARISH') return t.colors.signals.red;
-  return t.colors.signals.neutral;
+const MONO = "'JetBrains Mono', 'Courier New', monospace";
+
+const SectionLabel = ({ children, right }) => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    color: '#ff6600',
+    fontSize: '10px',
+    fontWeight: '700',
+    letterSpacing: '1.5px',
+    borderBottom: '1px solid #222',
+    paddingBottom: '6px',
+    marginBottom: '12px',
+  }}>
+    <span>{children}</span>
+    {right && <span style={{ color: '#333', fontWeight: '400' }}>{right}</span>}
+  </div>
+);
+
+function dirColor(direction) {
+  if (direction === 'BULLISH') return '#00ff41';
+  if (direction === 'BEARISH') return '#ff3333';
+  return '#444';
 }
 
 function nmBadge(nm) {
@@ -17,10 +35,10 @@ function nmBadge(nm) {
   return net >= 0 ? 'ACCELERATING' : 'REVERSING';
 }
 
-function nmBadgeColor(badge, t) {
-  if (badge === 'ACCELERATING') return t.colors.signals.green;
-  if (badge === 'REVERSING') return t.colors.signals.red;
-  return t.colors.signals.neutral;
+function nmBadgeColor(badge) {
+  if (badge === 'ACCELERATING') return '#00ff41';
+  if (badge === 'REVERSING') return '#ff3333';
+  return '#ffaa00';
 }
 
 export default function News() {
@@ -44,126 +62,117 @@ export default function News() {
   }, []);
 
   if (loading || !data) {
-    return <div style={{ color: theme.colors.text.secondary }}>Loading news intelligence...</div>;
+    return <div style={{ color: '#333', fontSize: '11px', letterSpacing: '1px', paddingTop: '40px', textAlign: 'center' }}>LOADING NEWS INTELLIGENCE...</div>;
   }
 
   const badge = nmBadge(data.narrative_momentum);
-  const badgeColor = nmBadgeColor(badge, theme);
+  const badgeColor = nmBadgeColor(badge);
   const categories = data.categories || {};
+  const panel = { border: '1px solid #222', backgroundColor: '#0d0d0d', marginBottom: '12px' };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', color: theme.colors.text.primary }}>News Intelligence</h1>
-          <p style={{ margin: 0, color: theme.colors.text.secondary, fontSize: '15px' }}>Sentiment scoring across macro categories from live news sources.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ color: '#ff6600', fontSize: '13px', fontWeight: '700', letterSpacing: '2px' }}>
+          NEWS INTELLIGENCE
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {/* Narrative Momentum Badge */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div style={{
-            padding: '6px 16px',
-            borderRadius: '20px',
+            padding: '3px 10px',
             border: `1px solid ${badgeColor}`,
-            backgroundColor: `${badgeColor}18`,
+            backgroundColor: `${badgeColor}0d`,
             color: badgeColor,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '0.5px'
+            fontSize: '10px',
+            fontWeight: '700',
+            letterSpacing: '1px',
+            fontFamily: MONO,
           }}>
             {badge}
           </div>
-          {/* Forward Event Risk */}
           <div style={{
-            padding: '6px 16px',
-            borderRadius: '20px',
-            border: `1px solid ${theme.colors.ui.border}`,
-            backgroundColor: theme.colors.background.secondary,
-            color: theme.colors.text.secondary,
-            fontSize: '12px',
-            fontWeight: '600'
+            padding: '3px 10px',
+            border: '1px solid #222',
+            backgroundColor: '#0d0d0d',
+            color: '#444',
+            fontSize: '10px',
+            fontWeight: '700',
+            letterSpacing: '1px',
+            fontFamily: MONO,
           }}>
-            EVENT RISK: {data.forward_event_risk}
+            EVT RISK: {data.forward_event_risk || 'N/A'}
           </div>
         </div>
       </div>
 
-      {/* Contradiction Warning Banner */}
+      {/* Contradiction Banner */}
       {data.contradiction_flag && (
         <div style={{
-          backgroundColor: `${theme.colors.signals.red}18`,
-          border: `1px solid ${theme.colors.signals.red}`,
-          borderRadius: '8px',
-          padding: '16px 20px',
+          border: '1px solid #ff333344',
+          backgroundColor: '#1a0000',
+          padding: '10px 14px',
+          marginBottom: '12px',
           display: 'flex',
           alignItems: 'flex-start',
-          gap: '12px'
+          gap: '10px',
         }}>
-          <AlertTriangle size={20} color={theme.colors.signals.red} style={{ flexShrink: 0, marginTop: '2px' }} />
+          <AlertTriangle size={14} color="#ff3333" style={{ flexShrink: 0, marginTop: '1px' }} />
           <div>
-            <div style={{ color: theme.colors.signals.red, fontWeight: '600', fontSize: '14px', marginBottom: '4px' }}>
-              Contradiction Detected
+            <div style={{ color: '#ff3333', fontSize: '10px', fontWeight: '700', letterSpacing: '1px', marginBottom: '3px' }}>
+              CONTRADICTION DETECTED
             </div>
-            <div style={{ color: theme.colors.text.secondary, fontSize: '13px', lineHeight: '1.5' }}>
+            <div style={{ color: '#555', fontSize: '11px', lineHeight: '1.5' }}>
               {data.contradiction_reason || 'Conflicting signals across fundamental categories.'}
             </div>
           </div>
         </div>
       )}
 
-      {/* 9-Category Sentiment Grid */}
-      <div>
-        <h3 style={{ color: theme.colors.text.primary, borderBottom: `1px solid ${theme.colors.ui.border}`, paddingBottom: '12px', margin: '0 0 20px 0' }}>
-          Category Sentiment Scores
-        </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+      {/* Category Sentiment Grid */}
+      <div style={{ ...panel, padding: '14px' }}>
+        <SectionLabel right="9-CATEGORY ANALYSIS">CATEGORY SENTIMENT SCORES</SectionLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
           {Object.entries(categories).map(([label, cat]) => {
             const score = cat.score || 0;
             const direction = cat.direction || 'NEUTRAL';
             const available = cat.available !== false;
-            const sColor = available ? dirColor(direction, theme) : theme.colors.text.secondary;
+            const sColor = available ? dirColor(direction) : '#2a2a2a';
             const DirIcon = direction === 'BULLISH' ? TrendingUp : direction === 'BEARISH' ? TrendingDown : Minus;
 
             return (
               <div key={label} style={{
-                backgroundColor: theme.colors.background.card,
-                border: `1px solid ${theme.colors.ui.border}`,
-                borderRadius: '8px',
-                padding: '16px',
-                opacity: available ? 1 : 0.45,
+                border: '1px solid #1a1a1a',
+                padding: '8px 10px',
+                opacity: available ? 1 : 0.4,
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <span style={{ color: theme.colors.text.primary, fontWeight: '500', fontSize: '13px' }}>{label}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <DirIcon size={14} color={sColor} />
-                    <span style={{ color: sColor, fontSize: '11px', fontWeight: '700' }}>{direction}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ color: '#444', fontSize: '10px', letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+                    {label}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <DirIcon size={11} color={sColor} />
+                    <span style={{ color: sColor, fontSize: '10px', fontWeight: '700' }}>{direction}</span>
                   </div>
                 </div>
-
-                {/* Score bar */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ color: sColor, width: '38px', textAlign: 'right', fontSize: '13px', fontWeight: '600' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: sColor, width: '36px', textAlign: 'right', fontSize: '11px', fontFamily: MONO }}>
                     {score >= 0 ? '+' : ''}{score.toFixed(2)}
                   </span>
-                  <div style={{ flex: 1, position: 'relative', height: '6px', backgroundColor: theme.colors.background.secondary, borderRadius: '3px' }}>
-                    <div style={{ position: 'absolute', left: '50%', height: '100%', width: '1px', backgroundColor: theme.colors.ui.border }} />
+                  <div style={{ flex: 1, position: 'relative', height: '4px', backgroundColor: '#111' }}>
+                    <div style={{ position: 'absolute', left: '50%', height: '100%', width: '1px', backgroundColor: '#2a2a2a' }} />
                     <div style={{
                       position: 'absolute',
                       height: '100%',
                       backgroundColor: sColor,
                       left: score >= 0 ? '50%' : `calc(50% - ${Math.abs(score) * 50}%)`,
                       width: `${Math.abs(score) * 50}%`,
-                      borderRadius: '3px',
-                      transition: 'width 0.4s ease'
+                      transition: 'width 0.4s ease',
                     }} />
                   </div>
                 </div>
-
                 {!available && (
-                  <div style={{ color: theme.colors.text.secondary, fontSize: '11px', marginTop: '8px', fontStyle: 'italic' }}>
-                    Not tracked
-                  </div>
+                  <div style={{ color: '#2a2a2a', fontSize: '10px', marginTop: '4px' }}>NOT TRACKED</div>
                 )}
               </div>
             );
@@ -174,16 +183,16 @@ export default function News() {
       {/* Dominant Narrative */}
       {data.dominant_narrative && (
         <div style={{
-          backgroundColor: theme.colors.background.card,
-          border: `1px solid ${theme.colors.ui.border}`,
-          borderLeft: `4px solid ${theme.colors.accent.blue}`,
-          borderRadius: '8px',
-          padding: '20px 24px'
+          border: '1px solid #222',
+          borderLeft: '2px solid #ff6600',
+          backgroundColor: '#0d0d0d',
+          padding: '12px 16px',
+          marginBottom: '12px',
         }}>
-          <div style={{ color: theme.colors.text.secondary, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
-            Dominant Narrative
+          <div style={{ color: '#ff6600', fontSize: '9px', letterSpacing: '2px', marginBottom: '6px' }}>
+            DOMINANT NARRATIVE
           </div>
-          <div style={{ color: theme.colors.text.primary, fontSize: '15px', lineHeight: '1.6' }}>
+          <div style={{ color: '#888', fontSize: '12px', lineHeight: '1.6', fontFamily: MONO }}>
             {data.dominant_narrative}
           </div>
         </div>
@@ -191,22 +200,22 @@ export default function News() {
 
       {/* Top Headlines */}
       {Array.isArray(data.top_3_headlines) && data.top_3_headlines.length > 0 && (
-        <div>
-          <h3 style={{ color: theme.colors.text.primary, borderBottom: `1px solid ${theme.colors.ui.border}`, paddingBottom: '12px', margin: '0 0 16px 0' }}>
-            Top Headlines
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ border: '1px solid #222', backgroundColor: '#0d0d0d', padding: '14px' }}>
+          <SectionLabel>TOP HEADLINES</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
             {data.top_3_headlines.map((hl, i) => (
               <div key={i} style={{
-                backgroundColor: theme.colors.background.card,
-                border: `1px solid ${theme.colors.ui.border}`,
-                borderRadius: '8px',
-                padding: '14px 18px',
-                color: theme.colors.text.secondary,
-                fontSize: '14px',
-                lineHeight: '1.5'
+                padding: '8px 0',
+                borderBottom: i < data.top_3_headlines.length - 1 ? '1px solid #181818' : 'none',
+                color: '#555',
+                fontSize: '11px',
+                lineHeight: '1.5',
+                fontFamily: MONO,
+                display: 'flex',
+                gap: '10px',
               }}>
-                {typeof hl === 'string' ? hl : (hl.title || hl.headline || JSON.stringify(hl))}
+                <span style={{ color: '#2a2a2a', flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</span>
+                <span>{typeof hl === 'string' ? hl : (hl.title || hl.headline || JSON.stringify(hl))}</span>
               </div>
             ))}
           </div>

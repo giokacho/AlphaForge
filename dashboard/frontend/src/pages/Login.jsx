@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { theme } from '../styles/theme';
-import { Shield } from 'lucide-react';
+
+const MONO = "'JetBrains Mono', 'Courier New', monospace";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,15 +17,28 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
     try {
       await login(username, password);
       navigate('/overview');
     } catch (err) {
-      setError('Invalid credentials');
+      setError('AUTH FAILED — INVALID CREDENTIALS');
     } finally {
       setLoading(false);
     }
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '8px 10px',
+    backgroundColor: '#0a0a0a',
+    border: 'none',
+    borderBottom: '1px solid #ff6600',
+    color: '#cccccc',
+    fontSize: '13px',
+    fontFamily: MONO,
+    outline: 'none',
+    boxSizing: 'border-box',
+    letterSpacing: '0.5px',
   };
 
   return (
@@ -34,111 +47,98 @@ export default function Login() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.background.primary,
-      fontFamily: 'Inter, system-ui, sans-serif'
+      backgroundColor: '#0a0a0a',
+      fontFamily: MONO,
     }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '420px',
-        backgroundColor: theme.colors.background.card,
-        padding: '40px',
-        borderRadius: '12px',
-        border: `1px solid ${theme.colors.ui.border}`,
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-             <Shield size={48} color={theme.colors.accent.blue} />
-          </div>
-          <h1 style={{ 
-            color: theme.colors.accent.blue, 
-            fontSize: '32px', 
-            fontWeight: 'bold',
-            margin: '0 0 8px 0',
-            letterSpacing: '-0.5px'
-          }}>AlphaForge</h1>
-          <p style={{ color: theme.colors.text.secondary, margin: 0, fontSize: '15px' }}>
-            Institutional Trading Analytics Core
-          </p>
+      <div style={{ width: '380px' }}>
+        {/* Terminal title bar */}
+        <div style={{
+          backgroundColor: '#ff6600',
+          padding: '7px 14px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <span style={{ color: '#000', fontWeight: '700', fontSize: '12px', letterSpacing: '1.5px' }}>
+            ALPHAFORGE TRADING SYSTEM
+          </span>
+          <span style={{ color: '#0007', fontSize: '10px' }}>v2.2</span>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
-            <label style={{ display: 'block', color: theme.colors.text.secondary, fontSize: '14px', marginBottom: '8px', fontWeight: '500' }}>Username</label>
-            <input 
-              type="text" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
-              autoComplete="username"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                backgroundColor: theme.colors.background.secondary,
-                border: `1px solid ${theme.colors.ui.border}`,
-                borderRadius: '6px',
-                color: theme.colors.text.primary,
-                fontSize: '15px',
-                boxSizing: 'border-box',
-                outline: 'none'
-              }}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', color: theme.colors.text.secondary, fontSize: '14px', marginBottom: '8px', fontWeight: '500' }}>Password</label>
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                backgroundColor: theme.colors.background.secondary,
-                border: `1px solid ${theme.colors.ui.border}`,
-                borderRadius: '6px',
-                color: theme.colors.text.primary,
-                fontSize: '15px',
-                boxSizing: 'border-box',
-                outline: 'none'
-              }}
-            />
-          </div>
-
-          {error && (
-            <div style={{ 
-              color: theme.colors.signals.red, 
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              padding: '12px',
-              borderRadius: '6px',
-              textAlign: 'center',
-              fontSize: '14px',
-              border: `1px solid rgba(239, 68, 68, 0.2)`
-            }}>
-              {error}
+        <div style={{ border: '1px solid #222', borderTop: 'none', backgroundColor: '#0d0d0d', padding: '24px' }}>
+          <div style={{ borderBottom: '1px solid #1a1a1a', paddingBottom: '16px', marginBottom: '20px' }}>
+            <div style={{ color: '#444', fontSize: '10px', letterSpacing: '1.5px', marginBottom: '5px' }}>
+              SECURE ACCESS TERMINAL
             </div>
-          )}
+            <div style={{ color: '#666', fontSize: '11px' }}>
+              Institutional Analytics Core — Authorized Personnel Only
+            </div>
+          </div>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            style={{
-              backgroundColor: theme.colors.accent.blue,
-              color: '#ffffff',
-              border: 'none',
-              padding: '14px',
-              borderRadius: '6px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              marginTop: '8px',
-              opacity: loading ? 0.7 : 1,
-              transition: 'opacity 0.2s'
-            }}>
-            {loading ? 'Authenticating...' : 'Sign In'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', color: '#ff6600', fontSize: '10px', letterSpacing: '1.5px', marginBottom: '6px' }}>
+                USER ID
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                style={inputStyle}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#ff6600', fontSize: '10px', letterSpacing: '1.5px', marginBottom: '6px' }}>
+                PASSWORD
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                style={inputStyle}
+              />
+            </div>
+
+            {error && (
+              <div style={{
+                color: '#ff3333',
+                fontSize: '11px',
+                padding: '8px 10px',
+                border: '1px solid #ff333333',
+                backgroundColor: '#1a0000',
+                letterSpacing: '0.5px',
+              }}>
+                ■ {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                backgroundColor: loading ? '#0d0d0d' : '#ff6600',
+                color: loading ? '#ff6600' : '#000',
+                border: '1px solid #ff6600',
+                padding: '10px',
+                fontSize: '11px',
+                fontFamily: MONO,
+                fontWeight: '700',
+                letterSpacing: '2px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                marginTop: '4px',
+              }}
+            >
+              {loading ? 'AUTHENTICATING...' : 'AUTHENTICATE'}
+            </button>
+          </form>
+        </div>
+
+        <div style={{ color: '#222', fontSize: '10px', letterSpacing: '0.5px', textAlign: 'center', marginTop: '12px' }}>
+          ALPHAFORGE PROPRIETARY SYSTEM — UNAUTHORIZED ACCESS PROHIBITED
+        </div>
       </div>
     </div>
   );

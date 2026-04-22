@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { theme } from '../styles/theme';
 import { TrendingUp, TrendingDown, Minus, Target, Shield, Crosshair, AlertOctagon } from 'lucide-react';
+
+const MONO = "'JetBrains Mono', 'Courier New', monospace";
+
+const DataRow = ({ label, value, valueColor = '#cccccc', noBorder }) => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '6px 0',
+    borderBottom: noBorder ? 'none' : '1px solid #181818',
+    fontSize: '12px',
+  }}>
+    <span style={{ color: '#444', fontSize: '11px' }}>{label}</span>
+    <span style={{ color: valueColor, fontFamily: MONO }}>{value}</span>
+  </div>
+);
 
 export default function Signals() {
   const [signals, setSignals] = useState(null);
@@ -13,153 +28,137 @@ export default function Signals() {
         const response = await apiClient.get('/api/signals');
         setSignals(response.data);
       } catch (err) {
-        console.error("Failed to fetch signals:", err);
+        console.error('Failed to fetch signals:', err);
       } finally {
         setLoading(false);
       }
     };
-    
     fetchSignals();
-    const interval = setInterval(fetchSignals, 180000); // 3 minutes
+    const interval = setInterval(fetchSignals, 180000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading) {
-    return <div style={{ color: theme.colors.text.secondary }}>Scanning terminal signals...</div>;
+    return <div style={{ color: '#333', fontSize: '11px', letterSpacing: '1px', paddingTop: '40px', textAlign: 'center' }}>SCANNING SIGNALS...</div>;
   }
 
-  // Ensure strict ordering: Gold, SPX, NQ
   const cardsOrder = ['Gold', 'SPX', 'NQ'];
   const displayNames = {
-      'Gold': 'GC=F (Gold Futures)',
-      'SPX': '^GSPC (S&P 500)',
-      'NQ': '^NDX (Nasdaq 100)'
+    Gold: 'GC=F',
+    SPX: '^GSPC',
+    NQ: '^NDX',
+  };
+  const fullNames = {
+    Gold: 'GOLD FUTURES',
+    SPX: 'S&P 500',
+    NQ: 'NASDAQ 100',
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      
-      {/* Header */}
-      <div>
-        <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', color: theme.colors.text.primary }}>Asset Intraday Signals</h1>
-        <p style={{ margin: 0, color: theme.colors.text.secondary, fontSize: '15px' }}>Live breakdown of Technical and VSA output modules.</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
+        <div style={{ color: '#ff6600', fontSize: '13px', fontWeight: '700', letterSpacing: '2px' }}>
+          ASSET INTRADAY SIGNALS
+        </div>
+        <div style={{ color: '#333', fontSize: '10px' }}>TECHNICAL + VSA MODULE OUTPUT</div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
         {cardsOrder.map(assetKey => {
-            const tickerData = signals && signals[assetKey] ? signals[assetKey] : null;
-            if (!tickerData) return null;
+          const td = signals && signals[assetKey] ? signals[assetKey] : null;
+          if (!td) return (
+            <div key={assetKey} style={{ border: '1px solid #222', backgroundColor: '#0d0d0d', padding: '16px' }}>
+              <div style={{ color: '#333', fontSize: '11px' }}>NO DATA — {assetKey}</div>
+            </div>
+          );
 
-            const isLong = tickerData.direction === 'LONG';
-            const isShort = tickerData.direction === 'SHORT';
-            const dirColor = isLong ? theme.colors.signals.green : isShort ? theme.colors.signals.red : theme.colors.text.secondary;
-            const DirIcon = isLong ? TrendingUp : isShort ? TrendingDown : Minus;
+          const isLong = td.direction === 'LONG';
+          const isShort = td.direction === 'SHORT';
+          const dirColor = isLong ? '#00ff41' : isShort ? '#ff3333' : '#444';
+          const DirIcon = isLong ? TrendingUp : isShort ? TrendingDown : Minus;
 
-            return (
-                <div key={assetKey} style={{
-                    backgroundColor: theme.colors.background.card,
-                    borderRadius: '12px',
-                    border: `1px solid ${theme.colors.ui.border}`,
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}>
-                    {/* Top Bar Accent */}
-                    <div style={{ height: '4px', backgroundColor: dirColor, width: '100%' }} />
-                    
-                    <div style={{ padding: '24px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-                            <div>
-                                <h2 style={{ margin: '0 0 4px 0', fontSize: '22px', fontWeight: 'bold', color: theme.colors.text.primary }}>
-                                    {displayNames[assetKey]}
-                                </h2>
-                                <span style={{ color: theme.colors.text.secondary, fontSize: '13px', textTransform: 'uppercase' }}>
-                                    {assetKey}
-                                </span>
-                            </div>
-                            
-                            <div style={{
-                                padding: '6px 12px',
-                                backgroundColor: isLong ? 'rgba(34, 197, 94, 0.1)' : isShort ? 'rgba(239, 68, 68, 0.1)' : theme.colors.background.secondary,
-                                color: dirColor,
-                                borderRadius: '6px',
-                                fontWeight: 'bold',
-                                fontSize: '13px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px'
-                            }}>
-                                <DirIcon size={16} />
-                                {tickerData.direction}
-                            </div>
-                        </div>
+          const strengthColor = {
+            'STRONG': '#00ff41',
+            'SIGNAL': '#ffaa00',
+            'WEAK': '#ff6600',
+            'NO_SIGNAL': '#333',
+          }[td.signal_strength] || '#444';
 
-                        {/* Badges row */}
-                        <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
-                            <div style={{ padding: '4px 10px', borderRadius: '4px', backgroundColor: theme.colors.background.secondary, fontSize: '12px', color: theme.colors.text.secondary, border: `1px solid ${theme.colors.ui.border}` }}>
-                                Score: <strong style={{ color: theme.colors.text.primary }}>{tickerData.final_score.toFixed(1)}/10</strong>
-                            </div>
-                            <div style={{ padding: '4px 10px', borderRadius: '4px', backgroundColor: theme.colors.background.secondary, fontSize: '12px', color: theme.colors.text.secondary, border: `1px solid ${theme.colors.ui.border}` }}>
-                                Strength: <strong style={{ color: theme.colors.text.primary }}>{tickerData.signal_strength.replace('_', ' ')}</strong>
-                            </div>
-                            {tickerData.vsa_flag && tickerData.vsa_flag !== 'NONE' && (
-                                <div style={{ padding: '4px 10px', borderRadius: '4px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: theme.colors.signals.neutral, fontSize: '12px', border: `1px solid rgba(245, 158, 11, 0.2)` }}>
-                                    VSA: <strong>{tickerData.vsa_flag}</strong>
-                                </div>
-                            )}
-                        </div>
+          return (
+            <div key={assetKey} style={{ border: '1px solid #222', backgroundColor: '#0d0d0d', display: 'flex', flexDirection: 'column' }}>
 
-                        {/* Trade Layout */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: `1px solid ${theme.colors.ui.border}` }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: theme.colors.text.secondary, fontSize: '14px' }}>
-                                    <Crosshair size={16} /> Entry Zone
-                                </div>
-                                <span style={{ fontWeight: '600', color: theme.colors.text.primary }}>
-                                    {tickerData.entry_zone ? tickerData.entry_zone.join(' - ') : '-'}
-                                </span>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: `1px solid ${theme.colors.ui.border}` }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: theme.colors.text.secondary, fontSize: '14px' }}>
-                                    <Shield size={16} /> Stop Loss
-                                </div>
-                                <span style={{ fontWeight: '600', color: theme.colors.signals.red }}>
-                                    {tickerData.stop_loss ? `$${tickerData.stop_loss}` : '-'}
-                                </span>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: `1px solid ${theme.colors.ui.border}` }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: theme.colors.text.secondary, fontSize: '14px' }}>
-                                    <Target size={16} /> Target 1
-                                </div>
-                                <span style={{ fontWeight: '600', color: theme.colors.signals.green }}>
-                                    {tickerData.target_1 ? `$${tickerData.target_1}` : '-'}
-                                </span>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: `1px solid ${theme.colors.ui.border}` }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: theme.colors.text.secondary, fontSize: '14px' }}>
-                                    <Target size={16} /> Target 2
-                                </div>
-                                <span style={{ fontWeight: '600', color: theme.colors.signals.green }}>
-                                    {tickerData.target_2 ? `$${tickerData.target_2}` : '-'}
-                                </span>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: theme.colors.text.secondary, fontSize: '14px' }}>
-                                    <AlertOctagon size={16} /> R/R Ratio
-                                </div>
-                                <span style={{ fontWeight: '600', color: theme.colors.text.primary }}>
-                                    {tickerData.rr_ratio ? `1:${tickerData.rr_ratio.toFixed(2)}` : '-'}
-                                </span>
-                            </div>
-
-                        </div>
-                    </div>
+              {/* Card header bar */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '8px 12px',
+                borderBottom: `1px solid ${dirColor}33`,
+                backgroundColor: '#0a0a0a',
+              }}>
+                <div>
+                  <span style={{ color: '#ff6600', fontSize: '14px', fontWeight: '700', letterSpacing: '1px', fontFamily: MONO }}>
+                    {displayNames[assetKey]}
+                  </span>
+                  <span style={{ color: '#333', fontSize: '10px', marginLeft: '8px', letterSpacing: '0.5px' }}>
+                    {fullNames[assetKey]}
+                  </span>
                 </div>
-            )
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  color: dirColor,
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  letterSpacing: '1px',
+                  padding: '3px 8px',
+                  border: `1px solid ${dirColor}`,
+                  backgroundColor: `${dirColor}0d`,
+                }}>
+                  <DirIcon size={12} />
+                  {td.direction}
+                </div>
+              </div>
+
+              {/* Score row */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                borderBottom: '1px solid #1a1a1a',
+              }}>
+                <div style={{ padding: '8px 12px', borderRight: '1px solid #1a1a1a' }}>
+                  <div style={{ color: '#444', fontSize: '9px', letterSpacing: '1px', marginBottom: '3px' }}>SCORE</div>
+                  <div style={{ color: '#ff6600', fontSize: '16px', fontWeight: '700', fontFamily: MONO }}>
+                    {td.final_score.toFixed(1)}<span style={{ color: '#333', fontSize: '11px' }}>/10</span>
+                  </div>
+                </div>
+                <div style={{ padding: '8px 12px', borderRight: '1px solid #1a1a1a' }}>
+                  <div style={{ color: '#444', fontSize: '9px', letterSpacing: '1px', marginBottom: '3px' }}>STRENGTH</div>
+                  <div style={{ color: strengthColor, fontSize: '12px', fontWeight: '600', fontFamily: MONO }}>
+                    {td.signal_strength.replace('_', ' ')}
+                  </div>
+                </div>
+                <div style={{ padding: '8px 12px' }}>
+                  <div style={{ color: '#444', fontSize: '9px', letterSpacing: '1px', marginBottom: '3px' }}>VSA FLAG</div>
+                  <div style={{ color: td.vsa_flag && td.vsa_flag !== 'NONE' ? '#ffaa00' : '#2a2a2a', fontSize: '11px', fontWeight: '600', fontFamily: MONO }}>
+                    {td.vsa_flag && td.vsa_flag !== 'NONE' ? td.vsa_flag : 'NONE'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Trade data */}
+              <div style={{ padding: '8px 12px', flex: 1 }}>
+                <DataRow label="ENTRY ZONE" value={td.entry_zone ? td.entry_zone.join(' – ') : '—'} />
+                <DataRow label="STOP LOSS" value={td.stop_loss ? `$${td.stop_loss}` : '—'} valueColor="#ff3333" />
+                <DataRow label="TARGET 1" value={td.target_1 ? `$${td.target_1}` : '—'} valueColor="#00ff41" />
+                <DataRow label="TARGET 2" value={td.target_2 ? `$${td.target_2}` : '—'} valueColor="#00ff41" />
+                <DataRow label="R/R RATIO" value={td.rr_ratio ? `1 : ${td.rr_ratio.toFixed(2)}` : '—'} noBorder />
+              </div>
+
+            </div>
+          );
         })}
       </div>
     </div>

@@ -14,6 +14,7 @@
 # =============================================================================
 
 import os
+import sys
 import csv
 import json
 import time
@@ -24,6 +25,9 @@ import requests
 import pandas as pd
 from filelock import FileLock, Timeout
 from dotenv import load_dotenv
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+from shared.assets import ASSETS as _ASSETS_REGISTRY, CRYPTO_ASSETS
 
 load_dotenv()
 
@@ -54,20 +58,12 @@ from vsa_check    import run_vsa_check
 from scorer       import calculate_final_score
 
 # ---------------------------------------------------------------------------
-# Asset definitions
-# These map the 3 target tickers to human-readable labels used throughout
-# the pipeline. Must stay consistent with config.py ASSETS list.
+# Asset definitions — sourced from shared/assets.py central registry
 # ---------------------------------------------------------------------------
-ASSETS = [
-    {"ticker": "GC=F",  "name": "Gold"},
-    {"ticker": "^GSPC", "name": "SPX"},
-    {"ticker": "^NDX",  "name": "NQ"},
-]
-
-# Convenience lookup: name -> ticker and ticker -> name
+ASSETS         = [{"ticker": a["ticker"], "name": a["name"]} for a in _ASSETS_REGISTRY]
 NAME_TO_TICKER = {a["name"]:   a["ticker"] for a in ASSETS}
 TICKER_TO_NAME = {a["ticker"]: a["name"]   for a in ASSETS}
-ASSET_NAMES    = [a["name"] for a in ASSETS]   # ordered list for iteration
+ASSET_NAMES    = [a["name"] for a in ASSETS]
 
 
 # ---------------------------------------------------------------------------
@@ -167,47 +163,48 @@ def main() -> None:
         is_monday = datetime.date.today().weekday() == 0
         wg_path   = os.path.join(output_dir, "weekly_gate.json")
 
-        def _calculate_and_save_gates(reason: str) -> dict:
-            """Run calculate_weekly_gate for all assets and persist to disk."""
-            print(f"[Step 2] {reason} — calculating weekly gates...")
-            gates = {}
-            for name, dfs in all_data.items():
-                df_w = dfs.get("weekly", pd.DataFrame())
-                if df_w.empty:
-                    print(f"  [{name}] WARNING: No weekly data — using BOTH_ALLOWED fallback.")
-                    gates[name] = {
-                        "gate": "BOTH_ALLOWED", "adx_quality": "UNKNOWN",
-                        "score_cap": 10.0, "adx_14": 0.0, "date": today_str
-                    }
-                    continue
-                try:
-                    wg = calculate_weekly_gate(df_w)
-                    wg["date"] = today_str
-                    gates[name] = wg
-                except Exception as wg_err:
-                    print(f"  [{name}] WARNING: Weekly gate calculation failed — {wg_err}")
-                    gates[name] = {
-                        "gate": "BOTH_ALLOWED", "adx_quality": "UNKNOWN",
-                        "score_cap": 10.0, "adx_14": 0.0, "date": today_str
-                    }
+        def _calc_gate_for_asset(name: str, dfs: dict) -> dict:
+            """Calculate weekly gate for one asset; returns gate dict."""
+            df_w = dfs.get("weekly", pd.DataFrame())
+            if df_w.empty:
+                print(f"  [{name}] WARNING: No weekly data — using BOTH_ALLOWED fallback.")
+                return {"gate": "BOTH_ALLOWED", "adx_quality": "UNKNOWN",
+                        "score_cap": 10.0, "adx_14": 0.0, "date": today_str}
+            try:
+                wg = calculate_weekly_gate(df_w)
+                wg["date"] = today_str
+                return wg
+            except Exception as wg_err:
+                print(f"  [{name}] WARNING: Weekly gate failed — {wg_err}")
+                return {"gate": "BOTH_ALLOWED", "adx_quality": "UNKNOWN",
+                        "score_cap": 10.0, "adx_14": 0.0, "date": today_str}
 
+        def _calculate_and_save_gates(reason: str) -> dict:
+            print(f"[Step 2] {reason} — calculating weekly gates...")
+            gates = {name: _calc_gate_for_asset(name, dfs) for name, dfs in all_data.items()}
             with open(wg_path, "w", encoding="utf-8") as f:
                 json.dump(gates, f, indent=4)
             print(f"[Step 2] Weekly gates saved to {wg_path}")
             return gates
 
-        if is_monday:
-            weekly_gates = _calculate_and_save_gates("Monday detected")
-            wg_source = "CALCULATED (Monday)"
-        elif not os.path.exists(wg_path):
-            weekly_gates = _calculate_and_save_gates("No gate file found (fallback)")
-            wg_source = "CALCULATED (fallback — file missing)"
+        if is_monday or not os.path.exists(wg_path):
+            reason = "Monday detected" if is_monday else "No gate file found (fallback)"
+            weekly_gates = _calculate_and_save_gates(reason)
+            wg_source = f"CALCULATED ({reason})"
         else:
             print("[Step 2] Not Monday — loading weekly gates from disk...")
             try:
                 with open(wg_path, "r", encoding="utf-8") as f:
                     weekly_gates = json.load(f)
                 wg_source = "LOADED from disk"
+                # Crypto assets trade 24/7 — always refresh their gates
+                crypto_to_refresh = [n for n in CRYPTO_ASSETS if n in all_data]
+                if crypto_to_refresh:
+                    print(f"[Step 2] Refreshing crypto gates: {crypto_to_refresh}")
+                    for name in crypto_to_refresh:
+                        weekly_gates[name] = _calc_gate_for_asset(name, all_data[name])
+                    with open(wg_path, "w", encoding="utf-8") as f:
+                        json.dump(weekly_gates, f, indent=4)
             except Exception as load_err:
                 print(f"[Step 2] WARNING: Failed to load gate file ({load_err}) — recalculating.")
                 weekly_gates = _calculate_and_save_gates("Load failure fallback")
@@ -389,7 +386,7 @@ def main() -> None:
                 # Continue to next asset — do not abort the whole run
                 continue
 
-        print(f"\n[Steps 3-8] Complete — {len(asset_results)}/3 assets processed.")
+        print(f"\n[Steps 3-8] Complete — {len(asset_results)}/{len(ASSET_NAMES)} assets processed.")
 
         # ==================================================================
         # STEP 9 — Save outputs

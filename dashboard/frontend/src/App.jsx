@@ -10,6 +10,7 @@ import Macro from './pages/Macro';
 import COT from './pages/COT';
 import Debate from './pages/Debate';
 import News from './pages/News';
+import Technicals from './pages/Technicals';
 
 // Protected layout that intercepts navigation and renders sidebar + outlet
 const ProtectedLayout = () => {
@@ -63,6 +64,7 @@ function App() {
                     <Route path="/" element={<Navigate to="/overview" replace />} />
                     <Route path="/overview" element={<Overview />} />
                     <Route path="/signals" element={<Signals />} />
+                    <Route path="/technicals" element={<Technicals />} />
                     <Route path="/macro" element={<Macro />} />
                     <Route path="/news" element={<News />} />
                     <Route path="/cot" element={<COT />} />

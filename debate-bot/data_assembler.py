@@ -36,9 +36,16 @@ Combined Risk Level (Master Risk Filter): {data.get('combined_risk_level', 'N/A'
     news_block = f"""NEWS SENTIMENT SECTION
 ----------------------
 Overall Sentiment Score (-1.0 to +1.0, extreme bearish to extreme bullish): {news.get('overall_sentiment', 'N/A')}
-Gold Score (Asset specific news sentiment): {news.get('gold_score', 'N/A')}
-SPX Score (Asset specific news sentiment): {news.get('spx_score', 'N/A')}
-NQ Score (Asset specific news sentiment): {news.get('nq_score', 'N/A')}
+Gold Score: {news.get('gold_score', 'N/A')}
+SPX Score: {news.get('spx_score', 'N/A')}
+NQ Score: {news.get('nq_score', 'N/A')}
+DOW Score: {news.get('dow_score', 'N/A')}
+BTC Score: {news.get('btc_score', 'N/A')}
+ETH Score: {news.get('eth_score', 'N/A')}
+Oil Score: {news.get('oil_score', 'N/A')}
+EURUSD Score: {news.get('eurusd_score', 'N/A')}
+USDJPY Score: {news.get('usdjpy_score', 'N/A')}
+USDCAD Score: {news.get('usdcad_score', 'N/A')}
 Geopolitical Risk (Current global tensions context): {news.get('geopolitical_risk', 'N/A')}
 Dominant Narrative (Main story driving markets): {news.get('dominant_narrative', 'N/A')}
 Contradiction Flag (True if internal metrics disagree, meaning higher risk): {news.get('contradiction_flag', 'N/A')}
@@ -48,42 +55,39 @@ Forward Event Risk (Impending high impact news items): {news.get('forward_event_
 
     techs = data.get("technicals_data", {}).get("assets", {})
     tech_block = "TECHNICALS SECTION\n------------------\n"
-    
+
     nq_signal = "NO_SIGNAL"
-    nq_score = 0
+    nq_score  = 0
     spx_signal = "NO_SIGNAL"
-    spx_score = 0
-    
-    for target in ["GLD", "SPY", "QQQ"]:
-        # Map back to Gold, SPX, NQ naming conventionally
-        asset_label = "Gold" if target == "GLD" else ("SPX" if target == "SPY" else "NQ")
-        a_data = techs.get(target, {})
-        
-        d_sig = a_data.get("daily_signal", {}).get("signal", "NO_SIGNAL")
-        f_score = a_data.get("final_score", {})
-        c_score = f_score.get("final_score", 0)
+    spx_score  = 0
+
+    for asset_label, a_data in techs.items():
+        if not isinstance(a_data, dict):
+            continue
+        d_sig      = a_data.get("daily_signal", {}).get("signal", "NO_SIGNAL")
+        f_score    = a_data.get("final_score", {})
+        c_score    = f_score.get("final_score", 0)
         s_strength = f_score.get("signal_strength", "NONE")
-        e_mode = a_data.get("entry_timer", {}).get("mode", "N/A")
-        w_gate = a_data.get("weekly_gate", {}).get("gate", "NEUTRAL")
-        v_flag = a_data.get("vsa_check", {}).get("vsa_flag", "NONE")
-        stops = a_data.get("stops_targets", {})
-        s_loss = stops.get("stop_loss", 0.0)
-        t1 = stops.get("target_1", 0.0)
-        t2 = stops.get("target_2", 0.0)
-        
-        # Factor breakdown showing each as plus 1 zero or minus 1
-        f1 = f_score.get("F1", 0)
-        f2 = f_score.get("F2", 0)
-        f3 = f_score.get("F3", 0)
-        f4 = f_score.get("F4", 0)
-        
+        e_mode     = a_data.get("entry_timer", {}).get("mode", "N/A")
+        w_gate     = a_data.get("weekly_gate", {}).get("gate", "NEUTRAL")
+        v_flag     = a_data.get("vsa_check", {}).get("vsa_flag", "NONE")
+        stops      = a_data.get("stops_targets", {})
+        s_loss     = stops.get("stop_loss", 0.0)
+        t1         = stops.get("target_1",  0.0)
+        t2         = stops.get("target_2",  0.0)
+        factors    = a_data.get("daily_signal", {}).get("factors", {})
+        f1 = factors.get("F1_Trend",      0)
+        f2 = factors.get("F2_Momentum",   0)
+        f3 = factors.get("F3_Volatility", 0)
+        f4 = factors.get("F4_Volume",     0)
+
         if asset_label == "SPX":
             spx_signal = d_sig
-            spx_score = c_score
+            spx_score  = c_score
         if asset_label == "NQ":
             nq_signal = d_sig
-            nq_score = c_score
-            
+            nq_score  = c_score
+
         tech_block += f"""Asset: {asset_label}
 Signal Direction (LONG/SHORT/NO_SIGNAL): {d_sig}
 Conviction Score (Out of 10): {c_score}
@@ -126,13 +130,12 @@ Target 2 (Secondary objective): {t2}
 
     cot = data.get("cot_data", {}).get("assets", {})
     cot_block = "COT POSITIONING\n---------------\n"
-    for target in ["GLD", "SPY", "QQQ"]:
-        asset_label = "Gold" if target == "GLD" else ("SPX" if target == "SPY" else "NQ")
-        a_cot = cot.get(asset_label, {})
-        bias = a_cot.get("institutional_bias", "N/A")
-        extreme = a_cot.get("positioning_extreme", "N/A")
-        crowding = a_cot.get("crowding_risk", "N/A")
-        
+    for asset_label, a_cot in cot.items():
+        if not isinstance(a_cot, dict):
+            continue
+        bias     = a_cot.get("institutional_bias",    "N/A")
+        extreme  = a_cot.get("positioning_extreme",   "N/A")
+        crowding = a_cot.get("crowding_risk",          "N/A")
         cot_block += f"Asset: {asset_label}\n"
         cot_block += f"Institutional Bias: {bias}\n"
         cot_block += f"Positioning Extreme: {extreme}\n"

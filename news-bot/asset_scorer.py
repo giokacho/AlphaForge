@@ -31,11 +31,18 @@ def score_assets_and_narrative(articles):
         return {"error": "No articles provided to analyze"}
         
     system_prompt = (
-        "You are a senior portfolio analyst at a global macro hedge fund focused on Gold, S&P 500, and Nasdaq 100. "
+        "You are a senior portfolio analyst at a global macro hedge fund. "
         "Analyze the provided news articles and return only valid JSON with these exact keys: "
         "gold_score (float -1.0 to 1.0 sentiment for Gold), "
         "spx_score (float -1.0 to 1.0 sentiment for S&P 500), "
         "nq_score (float -1.0 to 1.0 sentiment for Nasdaq 100), "
+        "dow_score (float -1.0 to 1.0 sentiment for Dow Jones), "
+        "btc_score (float -1.0 to 1.0 sentiment for Bitcoin), "
+        "eth_score (float -1.0 to 1.0 sentiment for Ethereum), "
+        "oil_score (float -1.0 to 1.0 sentiment for Crude Oil), "
+        "eurusd_score (float -1.0 to 1.0 sentiment for EUR/USD, positive=bullish EUR), "
+        "usdjpy_score (float -1.0 to 1.0 sentiment for USD/JPY, positive=bullish USD), "
+        "usdcad_score (float -1.0 to 1.0 sentiment for USD/CAD, positive=bullish USD), "
         "geopolitical_risk (float 0 to 1.0), "
         "earnings_tone (float -1.0 to 1.0 based only on earnings and guidance articles), "
         "dominant_narrative (string, maximum 6 words describing the single dominant market theme today), "

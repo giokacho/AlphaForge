@@ -22,6 +22,10 @@ def post_to_backend(payload: dict) -> None:
     except Exception as e:
         print(f"--> Backend POST failed (non-fatal): {e}")
 
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+from shared.assets import COT_INVERTED
+
 from config import ASSETS, CFTC_MAPPING, DATA_DIR
 from fetcher import fetch_cot_data
 from analyzer import (
@@ -102,9 +106,17 @@ def run_cot_pipeline():
             # Step 5: Get crowding risk
             crowding_data = get_crowding_risk(df)
             
-            # Record results
+            # Invert bias direction for pairs where long futures = short the pair
+            # e.g. long JPY futures = bearish USDJPY; long CAD futures = bearish USDCAD
+            effective_bias = bias
+            if COT_INVERTED.get(asset, False) and isinstance(bias, str):
+                if "LONG" in bias:
+                    effective_bias = bias.replace("LONG", "SHORT")
+                elif "SHORT" in bias:
+                    effective_bias = bias.replace("SHORT", "LONG")
+
             cot_output["assets"][asset] = {
-                "institutional_bias": bias,
+                "institutional_bias": effective_bias,
                 "positioning_extreme": extreme_data['extreme'],
                 "positioning_percentile": extreme_data['percentile'],
                 "crowding_risk": crowding_data['risk']

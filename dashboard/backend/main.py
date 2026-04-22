@@ -175,22 +175,81 @@ async def get_signals(current_user: dict = Depends(get_current_user)):
     results = {}
     for asset_name, a_data in assets.items():
         if not isinstance(a_data, dict): continue
-        fs = a_data.get("final_score", {})
-        st = a_data.get("stops_targets", {})
+        fs  = a_data.get("final_score",   {})
+        st  = a_data.get("stops_targets", {})
+        ds  = a_data.get("daily_signal",  {})
+        et  = a_data.get("entry_timer",   {})
         results[asset_name] = {
-            "direction": fs.get("direction", "NO_SIGNAL"),
-            "final_score": fs.get("final_score", 0.0),
+            "ticker":         a_data.get("ticker", asset_name),
+            "direction":      fs.get("direction",       "NO_SIGNAL"),
+            "final_score":    fs.get("final_score",     0.0),
             "signal_strength": fs.get("signal_strength", "NO_SIGNAL"),
-            "entry_zone": a_data.get("entry_timer", {}).get("entry_zone", []),
-            "stop_loss": st.get("stop_loss"),
-            "target_1": st.get("target_1"),
-            "target_2": st.get("target_2"),
-            "rr_ratio": st.get("rr_ratio"),
-            "vsa_flag": a_data.get("vsa_check", {}).get("vsa_flag", "NONE"),
-            "weekly_gate": a_data.get("weekly_gate", {}).get("direction", "N/A"),
-            "atr_regime": a_data.get("atr_volatility", {}).get("regime", "N/A"),
-            "entry_mode": a_data.get("entry_timer", {}).get("timer_state", "WAIT"),
-            "factors": a_data.get("factors", {})
+            "entry_zone":     et.get("entry_zone", []),
+            "stop_loss":      st.get("stop_loss"),
+            "target_1":       st.get("target_1"),
+            "target_2":       st.get("target_2"),
+            "rr_ratio":       st.get("rr_ratio"),
+            "vsa_flag":       a_data.get("vsa_check", {}).get("vsa_flag", "NONE"),
+            "weekly_gate":    a_data.get("weekly_gate", {}).get("gate", "N/A"),
+            "atr_regime":     fs.get("atr_regime", "N/A"),
+            "entry_mode":     et.get("mode", "WAIT"),
+            "factors":        ds.get("factors", {}),
+            "reasons":        fs.get("reasons", []),
+        }
+    return results
+
+@app.get("/api/technicals")
+async def get_technicals(current_user: dict = Depends(get_current_user)):
+    payload = data.load_latest_data()
+    assets_raw = payload.get("technicals", {}).get("assets", {})
+    results = {}
+    for name, a in assets_raw.items():
+        if not isinstance(a, dict): continue
+        fs  = a.get("final_score",   {})
+        ds  = a.get("daily_signal",  {})
+        et  = a.get("entry_timer",   {})
+        vsa = a.get("vsa_check",     {})
+        wg  = a.get("weekly_gate",   {})
+        atr = a.get("atr_regime",    {})
+        lvl = a.get("levels",        {})
+        st  = a.get("stops_targets", {})
+        results[name] = {
+            "ticker":             a.get("ticker", name),
+            "direction":          fs.get("direction",          "NO_SIGNAL"),
+            "final_score":        fs.get("final_score",        0.0),
+            "signal_strength":    fs.get("signal_strength",    "NO_SIGNAL"),
+            "position_size_pct":  fs.get("position_size_pct",  0),
+            "base_score":         fs.get("base_score",         0.0),
+            "quality_bonus":      fs.get("quality_bonus",      0.0),
+            "vsa_adjustment":     fs.get("vsa_adjustment",     0.0),
+            "flag_adjustments":   fs.get("flag_adjustments",   0.0),
+            "macro_multiplier":   fs.get("macro_multiplier_used", 1.0),
+            "news_penalty":       fs.get("news_penalty_applied",  0.0),
+            "weekly_cap_applied": fs.get("weekly_cap_applied", False),
+            "reasons":            fs.get("reasons",            []),
+            "factors":            ds.get("factors",            {}),
+            "daily_signal_dir":   ds.get("signal",             "NO_SIGNAL"),
+            "total_factor_score": ds.get("total_score",        0),
+            "entry_zone":         et.get("entry_zone"),
+            "entry_mode":         et.get("mode",               "N/A"),
+            "entry_confirmed":    et.get("entry_confirmed",    False),
+            "entry_conditions":   et.get("conditions",         {}),
+            "vsa_flag":           vsa.get("vsa_flag",          "NONE"),
+            "vsa_hard_cancel":    vsa.get("hard_cancel",       False),
+            "vsa_score_adj":      vsa.get("score_adjustment",  0.0),
+            "weekly_gate":        wg.get("gate",               "UNKNOWN"),
+            "adx_quality":        wg.get("adx_quality",        "UNKNOWN"),
+            "score_cap":          wg.get("score_cap",          10.0),
+            "adx_14":             wg.get("adx_14",             0.0),
+            "atr_regime":         fs.get("atr_regime",         "NORMAL_VOL"),
+            "atr_14":             atr.get("atr_14",            0.0),
+            "atr_percentile":     atr.get("atr_percentile",    50.0),
+            "nearest_support":    lvl.get("nearest_support",   0.0),
+            "nearest_resistance": lvl.get("nearest_resistance", 0.0),
+            "stop_loss":          st.get("stop_loss"),
+            "target_1":           st.get("target_1"),
+            "target_2":           st.get("target_2"),
+            "rr_ratio":           st.get("rr_ratio"),
         }
     return results
 
@@ -216,6 +275,13 @@ async def get_macro(current_user: dict = Depends(get_current_user)):
         ("Gold Score", "gold_score"),
         ("SPX Score", "spx_score"),
         ("NQ Score", "nq_score"),
+        ("DOW Score", "dow_score"),
+        ("BTC Score", "btc_score"),
+        ("ETH Score", "eth_score"),
+        ("Oil Score", "oil_score"),
+        ("EURUSD Score", "eurusd_score"),
+        ("USDJPY Score", "usdjpy_score"),
+        ("USDCAD Score", "usdcad_score"),
         ("Institutional Divergence", "institutional_divergence"),
     ]
     sentiment_scores = {

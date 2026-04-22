@@ -172,9 +172,16 @@ def calculate_dollar_risk(account_size: float, conviction: int | float) -> float
 
 # Unit label per ticker — Gold futures trade in contracts; equities in shares.
 _TICKER_UNITS: dict[str, str] = {
-    "GC=F":   "contracts",
-    "^GSPC":  "shares",
-    "^NDX":   "shares",
+    "GC=F":     "contracts",
+    "^GSPC":    "shares",
+    "^NDX":     "shares",
+    "^DJI":     "shares",
+    "BTC-USD":  "units",
+    "ETH-USD":  "units",
+    "CL=F":     "contracts",
+    "EURUSD=X": "units",
+    "JPY=X":    "units",
+    "CAD=X":    "units",
 }
 
 def calculate_position_size(

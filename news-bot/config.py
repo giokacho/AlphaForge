@@ -33,16 +33,10 @@ REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET", "")
 REDDIT_USER_AGENT    = os.getenv("REDDIT_USER_AGENT", "news-bot/1.0")
 
 FOCUS_ASSETS = [
-    "Gold",
-    "SPX",
-    "NQ",
-    "S&P500",
-    "Nasdaq",
-    "Federal Reserve",
-    "inflation",
-    "interest rates",
-    "recession",
-    "Treasury",
-    "dollar",
-    "DXY"
+    "Gold", "SPX", "NQ", "DOW", "BTC", "ETH", "Oil",
+    "EURUSD", "USDJPY", "USDCAD",
+    "S&P500", "Nasdaq", "Dow Jones", "Bitcoin", "Ethereum",
+    "crude oil", "Euro", "Japanese Yen", "Canadian Dollar",
+    "Federal Reserve", "inflation", "interest rates",
+    "recession", "Treasury", "dollar", "DXY", "forex",
 ]

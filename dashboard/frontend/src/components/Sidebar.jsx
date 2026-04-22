@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Activity, Globe, BarChart2, Users, LogOut, Newspaper } from 'lucide-react';
+import { LayoutDashboard, Activity, Globe, BarChart2, Users, LogOut, Newspaper, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const MONO = "'JetBrains Mono', 'Courier New', monospace";
@@ -31,12 +31,13 @@ export default function Sidebar() {
   }, [lastUpdated]);
 
   const navItems = [
-    { name: 'OVERVIEW', path: '/overview', icon: LayoutDashboard },
-    { name: 'SIGNALS', path: '/signals', icon: Activity },
-    { name: 'MACRO', path: '/macro', icon: Globe },
-    { name: 'NEWS INTEL', path: '/news', icon: Newspaper },
-    { name: 'COT DATA', path: '/cot', icon: BarChart2 },
-    { name: 'DEBATE', path: '/debate', icon: Users },
+    { name: 'OVERVIEW',    path: '/overview',    icon: LayoutDashboard },
+    { name: 'SIGNALS',     path: '/signals',     icon: Activity },
+    { name: 'TECHNICALS',  path: '/technicals',  icon: TrendingUp },
+    { name: 'MACRO',       path: '/macro',       icon: Globe },
+    { name: 'NEWS INTEL',  path: '/news',        icon: Newspaper },
+    { name: 'COT DATA',    path: '/cot',         icon: BarChart2 },
+    { name: 'DEBATE',      path: '/debate',      icon: Users },
   ];
 
   return (

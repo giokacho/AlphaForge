@@ -23,7 +23,8 @@ app.add_middleware(
         "https://alpha-forge-wheat.vercel.app",
         "https://alpha-forge-git-main-alphahedge.vercel.app",
         "https://alpha-forge-9j5r1h34n-alphahedge.vercel.app",
-        "https://alpha-forge-kj2yaqx1j-alphahedge.vercel.app"
+        "https://alpha-forge-kj2yaqx1j-alphahedge.vercel.app",
+        "https://alpha-forge-iijmhp193-alphahedge.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],

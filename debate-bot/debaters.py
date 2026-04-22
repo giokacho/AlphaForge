@@ -1,12 +1,32 @@
 import json
-import google.generativeai as genai
-from config import GEMINI_API_KEY, GEMINI_MODEL
+import requests
+from config import OPENROUTER_API_KEY, OPENROUTER_MODEL
+
+_HEADERS = {
+    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+    "Content-Type": "application/json",
+}
+
+def _call_openrouter(system_prompt: str, user_content: str) -> str:
+    payload = {
+        "model": OPENROUTER_MODEL,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_content},
+        ],
+        "response_format": {"type": "json_object"},
+    }
+    resp = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers=_HEADERS,
+        json=payload,
+        timeout=60,
+    )
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"]
+
 
 def run_bull_bot(data_block):
-    """
-    Acts as the 'Bull' in the debate, constructing the strongest possible bullish argument
-    based on the provided market data block. Returns parsed JSON results.
-    """
     system_prompt = (
         "You are the bull case analyst at a global macro hedge fund. "
         "Build the strongest possible case for being long Gold, S&P 500, and Nasdaq 100. "
@@ -18,55 +38,19 @@ def run_bull_bot(data_block):
         "in preference order, suggested_timeframe SHORT_TERM or MEDIUM_TERM, "
         "key_risk_to_bull_case one sentence, bull_summary maximum 3 sentences."
     )
-    
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        
-        # Generation config to ensure JSON output
-        model = genai.GenerativeModel(
-            model_name=GEMINI_MODEL,
-            system_instruction=system_prompt,
-            generation_config={"response_mime_type": "application/json"}
-        )
-        
-        response = model.generate_content(
+        text = _call_openrouter(
+            system_prompt,
             f"Here is the market data block:\n{data_block}\n\nReturn only valid JSON based on your instructions."
         )
-        
-        # Clean and parse response text for valid JSON
-        text = response.text.strip()
-        print(f"\n[BULL BOT RAW RESPONSE]\n{text}\n[END BULL BOT RAW RESPONSE]\n")
-        
-        if text.startswith("```json"):
-            text = text[7:]
-        elif text.startswith("```"):
-            text = text[3:]
-            
-        if text.endswith("```"):
-            text = text[:-3]
-            
-        try:
-            parsed_response = json.loads(text.strip())
-        except json.JSONDecodeError as e:
-            print(f"\n[BULL BOT JSON PARSE ERROR]\nError Details: {e}\nFailed string:\n{text.strip()}\n[END ERROR]\n")
-            raise
-        
-        # Enforce that case_direction is always BULL as requested.
-        parsed_response["case_direction"] = "BULL"
-        return parsed_response
-        
+        parsed = json.loads(text.strip())
+        parsed["case_direction"] = "BULL"
+        return parsed
     except Exception as e:
-        return {
-            "case_direction": "BULL",
-            "conviction": 0,
-            "error": str(e)
-        }
+        return {"case_direction": "BULL", "conviction": 0, "error": str(e)}
+
 
 def run_bear_bot(data_block):
-    """
-    Acts as the 'Bear' in the debate, constructing the strongest possible bearish argument
-    based on the provided market data block. Returns parsed JSON results.
-    """
     system_prompt = (
         "You are the bear case analyst at a global macro hedge fund. "
         "Build the strongest possible case for being short or risk-off on Gold S&P 500 and Nasdaq 100. "
@@ -77,62 +61,25 @@ def run_bear_bot(data_block):
         "assets_at_risk list of up to 3 assets, suggested_action one of REDUCE_LONGS or SHORT or CASH or HEDGE, "
         "key_risk_to_bear_case one sentence, bear_summary maximum 3 sentences."
     )
-    
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        
-        # Generation config to ensure JSON output
-        model = genai.GenerativeModel(
-            model_name=GEMINI_MODEL,
-            system_instruction=system_prompt,
-            generation_config={"response_mime_type": "application/json"}
-        )
-        
-        response = model.generate_content(
+        text = _call_openrouter(
+            system_prompt,
             f"Here is the market data block:\n{data_block}\n\nReturn only valid JSON based on your instructions."
         )
-        
-        # Clean and parse response text for valid JSON
-        text = response.text.strip()
-        print(f"\n[BEAR BOT RAW RESPONSE]\n{text}\n[END BEAR BOT RAW RESPONSE]\n")
-        
-        if text.startswith("```json"):
-            text = text[7:]
-        elif text.startswith("```"):
-            text = text[3:]
-            
-        if text.endswith("```"):
-            text = text[:-3]
-            
-        try:
-            parsed_response = json.loads(text.strip())
-        except json.JSONDecodeError as e:
-            print(f"\n[BEAR BOT JSON PARSE ERROR]\nError Details: {e}\nFailed string:\n{text.strip()}\n[END ERROR]\n")
-            raise
-        
-        # Enforce that case_direction is always BEAR as requested.
-        parsed_response["case_direction"] = "BEAR"
-        return parsed_response
-        
+        parsed = json.loads(text.strip())
+        parsed["case_direction"] = "BEAR"
+        return parsed
     except Exception as e:
-        return {
-            "case_direction": "BEAR",
-            "conviction": 0,
-            "error": str(e)
-        }
+        return {"case_direction": "BEAR", "conviction": 0, "error": str(e)}
+
 
 if __name__ == "__main__":
-    # Test block fetching
     from data_assembler import get_data_block
-    
     test_block = get_data_block()
     if test_block:
-        print("Running Bull Bot on data block...")
-        bull_result = run_bull_bot(test_block)
-        print(json.dumps(bull_result, indent=4))
-        
-        print("\nRunning Bear Bot on data block...")
-        bear_result = run_bear_bot(test_block)
-        print(json.dumps(bear_result, indent=4))
+        print("Running Bull Bot...")
+        print(json.dumps(run_bull_bot(test_block), indent=4))
+        print("\nRunning Bear Bot...")
+        print(json.dumps(run_bear_bot(test_block), indent=4))
     else:
-        print("No valid data block generated. Please check combined_context.json.")
+        print("No valid data block. Check combined_context.json.")

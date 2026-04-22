@@ -14,18 +14,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="AlphaForge Dashboard API")
 
-# Add CORS Middleware to explicitly support the React/Vercel frontend domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://alpha-forge-wheat.vercel.app",
-        "https://alpha-forge-git-main-alphahedge.vercel.app",
-        "https://alpha-forge-9j5r1h34n-alphahedge.vercel.app",
-        "https://alpha-forge-kj2yaqx1j-alphahedge.vercel.app",
-        "https://alpha-forge-iijmhp193-alphahedge.vercel.app"
-    ],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

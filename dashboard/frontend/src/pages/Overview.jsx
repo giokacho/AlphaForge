@@ -101,8 +101,8 @@ export default function Overview() {
     ];
   };
 
-  const dt = overview.last_run_time !== 'N/A'
-    ? new Date(overview.last_run_time).toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+  const dt = overview.last_run_time && overview.last_run_time !== 'N/A'
+    ? (() => { const d = new Date(overview.last_run_time); return isNaN(d) ? 'N/A' : d.toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }); })()
     : 'N/A';
 
   const conviction = typeof overview.final_conviction === 'number' ? overview.final_conviction : 0;
@@ -144,7 +144,7 @@ export default function Overview() {
           },
           {
             label: 'ACTIVE SIGNALS',
-            value: `${activeCount} / 3`,
+            value: `${activeCount} / ${Object.keys(signals || {}).length}`,
             color: activeCount > 0 ? '#00ff41' : '#444',
           },
           {

@@ -1,5 +1,4 @@
 import time
-import datetime
 import database
 
 # Memory cache to avoid hammering SQLite on every request
@@ -51,7 +50,7 @@ def load_latest_data() -> dict:
         "technicals":         tech_data,
         "debate":             debt_data,
         "trade_sheet":        risk_data,
-        "last_updated":       datetime.datetime.now(datetime.timezone.utc).isoformat()
+        "last_updated":       database.get_latest_run_time() or "N/A"
     }
 
     _cache_payload = dashboard_payload

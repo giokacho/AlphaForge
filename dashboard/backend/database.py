@@ -48,6 +48,12 @@ def save_bot_output(bot_name: str, payload: dict) -> bool:
     finally:
         conn.close()
 
+def get_latest_run_time() -> str | None:
+    conn = sqlite3.connect(DB_PATH)
+    row = conn.execute("SELECT MAX(created_at) FROM bot_outputs").fetchone()
+    conn.close()
+    return row[0] if row and row[0] else None
+
 def get_latest_output(bot_name: str) -> dict | None:
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()

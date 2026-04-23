@@ -1,3 +1,68 @@
 {
-    "error": "API Call Failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\nPlease retry in 18.316155817s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-2.0-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n}\nviolations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-2.0-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n}\nviolations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_input_token_count\"\n  quota_id: \"GenerateContentInputTokensPerModelPerMinute-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-2.0-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n}\n, retry_delay {\n  seconds: 18\n}\n]"
+    "gold_score": -0.1,
+    "spx_score": 0.2,
+    "nq_score": 0.3,
+    "dow_score": 0.2,
+    "btc_score": -0.1,
+    "eth_score": -0.2,
+    "oil_score": 0.3,
+    "eurusd_score": 0.0,
+    "usdjpy_score": 0.0,
+    "usdcad_score": 0.0,
+    "geopolitical_risk": 0.7,
+    "earnings_tone": 0.3,
+    "inflation_score": 0.5,
+    "gdp_score": -0.1,
+    "employment_score": -0.2,
+    "dominant_narrative": "Geopolitical risk dominates, impacting markets",
+    "narrative_confidence": 0.8,
+    "top_3_headlines": [
+        "Crude spikes past $100/bbl again on Strait of Hormuz gunfire.",
+        "MicroStrategy\u2019s STRC Buys 10X More Bitcoin Than All ETFs in 2026.",
+        "JPMorgan Chase Hikes Target for S&P 500 for 2026 at 7,600."
+    ],
+    "top_headlines": {
+        "macro": [
+            {
+                "headline": "UK inflation jumps to 3.3% amid Iran war, fuel surge",
+                "impact": "Inflation spike pressures BoE, weakens consumer sentiment."
+            },
+            {
+                "headline": "Germany set to slash growth forecast due to Mideast war",
+                "impact": "Energy shock impacts Europe's biggest economy"
+            },
+            {
+                "headline": "Bank Indonesia Holds Key Rate, Vows Further FX Intervention",
+                "impact": "Monetary policy aims to stabalize both Rupiah and inflation."
+            }
+        ],
+        "tech_earnings": [
+            {
+                "headline": "ASM Outlook Beats Estimates as AI Drives Tool Demand",
+                "impact": "AI investment boosts the Dutch chip-equipment maker"
+            },
+            {
+                "headline": "Meta projected $16 billion in scam ad revenue, lawsuits pile up",
+                "impact": "Company's faced with multiple lawsuits for knowingly profiting from scam advertisements."
+            },
+            {
+                "headline": "Global IT Spending To Reach $6.31 Trillion in 2026, Gartner Projects",
+                "impact": "Highlights the significant growth in IT sector."
+            }
+        ],
+        "commodity_fx": [
+            {
+                "headline": "Crude spikes past $100/bbl again on Strait of Hormuz gunfire",
+                "impact": "The news of the Strait of Hormuz leads to immediate spike in oil prices."
+            },
+            {
+                "headline": "Talks for Pertamina ship release becoming more complex",
+                "impact": "Further escalation of tensions."
+            },
+            {
+                "headline": "Seafarer talks being trapped on the Strait of Hormuz: 'There is no safe place here'",
+                "impact": "Humanitarian crisis deepens due to geopolitical tensions."
+            }
+        ]
+    }
 }

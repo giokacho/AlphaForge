@@ -44,9 +44,14 @@ def score_assets_and_narrative(articles):
         "usdcad_score (float -1.0 to 1.0 for USD/CAD, positive=bullish USD), "
         "geopolitical_risk (float 0 to 1.0), "
         "earnings_tone (float -1.0 to 1.0 based only on earnings/guidance articles), "
+        "inflation_score (float -1.0 to 1.0 from CPI/PPI/inflation articles, positive=inflationary), "
+        "gdp_score (float -1.0 to 1.0 from GDP/growth/recession articles, positive=strong growth), "
+        "employment_score (float -1.0 to 1.0 from jobs/NFP/unemployment articles, positive=strong labor market), "
         "dominant_narrative (string, max 6 words describing the dominant market theme today), "
         "narrative_confidence (float 0 to 1.0), "
-        "top_3_headlines (list of 3 most market-moving headlines with one sentence explanation each). "
+        "top_3_headlines (list of 3 strings, each the most market-moving headline with one sentence explanation), "
+        "top_headlines (object with keys macro, tech_earnings, commodity_fx — each a list of up to 3 objects "
+        "with keys headline string and impact string one sentence). "
         "Weight each article by its weight field. Be precise and direct."
     )
 

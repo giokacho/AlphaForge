@@ -101,9 +101,16 @@ function nmBadgeColor(badge) {
   return '#ffaa00';
 }
 
+const SECTION_LABELS = {
+  macro: 'MACRO',
+  tech_earnings: 'TECH & EARNINGS',
+  commodity_fx: 'COMMODITY & FX',
+};
+
 export default function News() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('intelligence');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -135,8 +142,27 @@ export default function News() {
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <div style={{ color: '#ff6600', fontSize: '13px', fontWeight: '700', letterSpacing: '2px' }}>
-          NEWS INTELLIGENCE
+        <div style={{ display: 'flex', gap: '0', alignItems: 'center' }}>
+          <div style={{ color: '#ff6600', fontSize: '13px', fontWeight: '700', letterSpacing: '2px', marginRight: '20px' }}>
+            NEWS INTELLIGENCE
+          </div>
+          {['intelligence', 'headlines'].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === tab ? '2px solid #ff6600' : '2px solid transparent',
+              color: activeTab === tab ? '#ff6600' : '#333',
+              fontSize: '10px',
+              fontWeight: '700',
+              letterSpacing: '1.5px',
+              padding: '4px 14px',
+              cursor: 'pointer',
+              fontFamily: MONO,
+              textTransform: 'uppercase',
+            }}>
+              {tab === 'intelligence' ? 'SENTIMENT' : 'TOP NEWS'}
+            </button>
+          ))}
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div style={{
@@ -165,6 +191,60 @@ export default function News() {
           </div>
         </div>
       </div>
+
+      {/* TOP NEWS TAB */}
+      {activeTab === 'headlines' && (() => {
+        const th = data.top_headlines || {};
+        const sections = Object.keys(SECTION_LABELS);
+        const hasAny = sections.some(s => Array.isArray(th[s]) && th[s].length > 0);
+        if (!hasAny) {
+          return (
+            <div style={{ color: '#333', fontSize: '11px', letterSpacing: '1px', paddingTop: '40px', textAlign: 'center' }}>
+              NO CATEGORIZED HEADLINES — RUN PIPELINE TO POPULATE
+            </div>
+          );
+        }
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {sections.map(sectionKey => {
+              const items = th[sectionKey];
+              if (!Array.isArray(items) || items.length === 0) return null;
+              return (
+                <div key={sectionKey} style={{ border: '1px solid #222', backgroundColor: '#0d0d0d', padding: '14px' }}>
+                  <SectionLabel>{SECTION_LABELS[sectionKey]}</SectionLabel>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    {items.map((item, i) => (
+                      <div key={i} style={{
+                        padding: '10px 0',
+                        borderBottom: i < items.length - 1 ? '1px solid #181818' : 'none',
+                        display: 'flex',
+                        gap: '12px',
+                      }}>
+                        <span style={{ color: '#2a2a2a', flexShrink: 0, fontSize: '11px', fontFamily: MONO }}>
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <div>
+                          <div style={{ color: '#888', fontSize: '11px', fontFamily: MONO, lineHeight: '1.5', marginBottom: '3px' }}>
+                            {item.headline || item}
+                          </div>
+                          {item.impact && (
+                            <div style={{ color: '#444', fontSize: '10px', fontFamily: MONO, lineHeight: '1.4' }}>
+                              {item.impact}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* SENTIMENT TAB */}
+      {activeTab === 'intelligence' && <>
 
       {/* Contradiction Banner */}
       {data.contradiction_flag && (
@@ -284,6 +364,8 @@ export default function News() {
           </div>
         </div>
       )}
+
+      </>}
 
     </div>
   );

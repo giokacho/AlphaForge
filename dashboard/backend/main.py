@@ -303,9 +303,9 @@ async def get_news(current_user: dict = Depends(get_current_user)):
 
     category_map = [
         ("Fed Policy",        "fed_hawkishness"),
-        ("Inflation",         None),
-        ("GDP / Growth",      None),
-        ("Employment",        None),
+        ("Inflation",         "inflation_score"),
+        ("GDP / Growth",      "gdp_score"),
+        ("Employment",        "employment_score"),
         ("Geopolitics",       "geopolitical_risk"),
         ("Risk Appetite",     "overall_sentiment"),
         ("Earnings",          "earnings_tone"),
@@ -325,6 +325,9 @@ async def get_news(current_user: dict = Depends(get_current_user)):
     nm = news.get("narrative_momentum", {})
     if not isinstance(nm, dict): nm = {}
 
+    top_headlines = news.get("top_headlines", {})
+    if not isinstance(top_headlines, dict): top_headlines = {}
+
     return {
         "categories": categories,
         "contradiction_flag": news.get("contradiction_flag", False),
@@ -333,6 +336,7 @@ async def get_news(current_user: dict = Depends(get_current_user)):
         "dominant_narrative": news.get("dominant_narrative", ""),
         "forward_event_risk": news.get("forward_event_risk", "UNKNOWN"),
         "top_3_headlines": news.get("top_3_headlines", []),
+        "top_headlines": top_headlines,
     }
 
 @app.get("/api/cot")

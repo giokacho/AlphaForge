@@ -32,16 +32,7 @@ from synthesizer import run_synthesis
 def run_all_debaters(data_block):
     bull_result = run_bull_bot(data_block)
     bear_result = run_bear_bot(data_block)
-    
-    # Mocking risk_result as part of this layer or pulling it dynamically
-    # Since there wasn't a strict risk_bot defined in the directory previously.
-    risk_result = {
-        "regime_uncertainty": "NORMAL",
-        "risk_score": 5,
-        "top_tail_risk": "Mock Tail Risk",
-        "data_contradictions": ["Mock contradiction 1", "Mock contradiction 2"]
-    }
-    return bull_result, bear_result, risk_result
+    return bull_result, bear_result
 
 def main():
     start_time = time.time()
@@ -57,10 +48,17 @@ def main():
             
         # Step 2
         step = 2
-        bull_result, bear_result, risk_result = run_all_debaters(data_block)
+        bull_result, bear_result = run_all_debaters(data_block)
         bull_conviction = bull_result.get("conviction", 0) if isinstance(bull_result, dict) else 0
         bear_conviction = bear_result.get("conviction", 0) if isinstance(bear_result, dict) else 0
-        risk_uncertainty = risk_result.get("regime_uncertainty", "UNKNOWN") if isinstance(risk_result, dict) else "UNKNOWN"
+        bear_r = bear_result if isinstance(bear_result, dict) else {}
+        risk_result = {
+            "regime_uncertainty": "NORMAL",
+            "risk_score": bear_conviction,
+            "top_tail_risk": bear_r.get("key_risk_to_bear_case", "N/A"),
+            "data_contradictions": [bear_r.get("bear_summary", "N/A")],
+        }
+        risk_uncertainty = risk_result.get("regime_uncertainty", "NORMAL")
         print(f"Bull conviction: {bull_conviction}, Bear conviction: {bear_conviction}, Risk uncertainty: {risk_uncertainty}")
         
         # Step 3

@@ -42,6 +42,9 @@ def aggregate_final_sentiment(
         "fed_hawkishness": hawk_results.get("hawkishness_score", 0.0),
         "geopolitical_risk": asset_results.get("geopolitical_risk", 0.0),
         "earnings_tone": earnings_tone,
+        "inflation_score": asset_results.get("inflation_score", 0.0),
+        "gdp_score": asset_results.get("gdp_score", 0.0),
+        "employment_score": asset_results.get("employment_score", 0.0),
         "narrative_momentum": velocity_results,
         "institutional_divergence": round(institutional_vs_retail_divergence, 4),
         "gold_score": gold_score,
@@ -51,7 +54,8 @@ def aggregate_final_sentiment(
         "contradiction_reason": contradiction_results.get("explanation", ""),
         "dominant_narrative": asset_results.get("dominant_narrative", ""),
         "forward_event_risk": forward_event_risk,
-        "top_3_headlines": asset_results.get("top_3_headlines", [])
+        "top_3_headlines": asset_results.get("top_3_headlines", []),
+        "top_headlines": asset_results.get("top_headlines", {}),
     }
     
     return final_scores
